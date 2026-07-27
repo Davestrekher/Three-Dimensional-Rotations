@@ -1,0 +1,5 @@
+
+.git
+
+#Ignores .class files
+*.class
