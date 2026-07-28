@@ -11,8 +11,8 @@ public class Main extends Application {
 
   @Override
   public void start(Stage primaryStage) throws IOException {
-    FXMLLoader loader = new FXMLLoader(getClass().getResource("/vision/TelaLogin.fxml"));// Carrega o FXML da tela
-                                                                                         // principal
+    FXMLLoader loader = new FXMLLoader(getClass().getResource("vision/TelaPrincipal.fxml"));// Carrega o FXML da tela
+    // principal
     Parent root = loader.load();// Carrega o conteudo do FXML para um objeto Parent, que sera usado como raiz da
                                 // cena
 

@@ -3,3 +3,6 @@
 
 #Ignores .class files
 *.class
+
+#Bin
+.bin
