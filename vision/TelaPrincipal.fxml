@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
 
-
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="control.ControladorTelaPrincipal">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1600.0" style="-fx-background-color: #FFFFFF;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="control.ControladorTelaPrincipal">
    <children>
-      <Button layoutX="34.0" layoutY="94.0" mnemonicParsing="false" onAction="#teste" text="Button" />
+      <Canvas fx:id="canvas" height="679.0" layoutX="425.0" layoutY="42.0" width="1073.0" />
+      <Pane layoutY="282.0" prefHeight="900.0" prefWidth="265.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Button layoutX="109.0" layoutY="216.0" mnemonicParsing="false" onAction="#teste" text="Button" />
+            <Button layoutX="92.0" layoutY="277.0" mnemonicParsing="false" onAction="#teste2" text="Button" />
+         </children>
+      </Pane>
    </children>
 </AnchorPane>
