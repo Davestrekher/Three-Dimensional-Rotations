@@ -2,6 +2,7 @@
 
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
 
@@ -14,5 +15,7 @@
             <Button layoutX="92.0" layoutY="277.0" mnemonicParsing="false" onAction="#teste2" text="Button" />
          </children>
       </Pane>
+      <Slider fx:id="sliderHorizontal" layoutX="483.0" layoutY="773.0" max="6.2831" min="-6.2831" prefHeight="16.0" prefWidth="636.0" />
+      <Slider fx:id="sliderVertical" layoutX="54.0" layoutY="374.0" max="6.2831" min="-6.2831" prefHeight="16.0" prefWidth="636.0" rotate="90.0" />
    </children>
 </AnchorPane>

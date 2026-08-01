@@ -19,6 +19,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -49,10 +50,18 @@ public class ControladorTelaPrincipal implements Initializable {
   @FXML
   private Canvas canvas;
 
+  @FXML
+  private Slider sliderHorizontal;
+
+  @FXML
+  private Slider sliderVertical;
+
   private double offsetX;
   private double offsetY;
 
   private GraphicsContext graphics;
+
+  private ArrayList<Ponto3D> pontos;
 
   @Override
   public void initialize(URL url, ResourceBundle resource) {
@@ -60,16 +69,18 @@ public class ControladorTelaPrincipal implements Initializable {
 
     offsetX = canvas.getWidth() / 2;
     offsetY = canvas.getHeight() / 2;
+
+    pontos = new ArrayList<>();
   }
 
   @FXML
   public void teste(ActionEvent e) {
-    GraphicsContext gc = canvas.getGraphicsContext2D();
 
-    // gc.strokeLine(x1, y1, x2, y2);
     drawLine(new Ponto3D(0, -offsetY, 0), new Ponto3D(0, offsetY, 0));
     drawLine(new Ponto3D(-300, 0, 0), new Ponto3D(300, 0, 0));
     drawLine(new Ponto3D(0, 0, -offsetX), new Ponto3D(0, 0, offsetX));
+
+    renderLines();
   }
 
   @FXML
@@ -115,10 +126,48 @@ public class ControladorTelaPrincipal implements Initializable {
       Ponto3D ponto3D = new Ponto3D(pontoA.getX() + (vetorDiretor.getX() * i),
           pontoA.getY() + (vetorDiretor.getY() * i), pontoA.getZ() + (vetorDiretor.getZ() * i));
 
-      Ponto2D ponto2D = Projection.project(ponto3D);
-
-      drawPoint(ponto2D, 2);
+      pontos.add(ponto3D);
     }
+  }
+
+  public void renderLines() {
+    new Thread(() -> {
+      while (true) {
+        ArrayList<Ponto3D> pontosAnteriores = new ArrayList<>(pontos);
+
+        Platform.runLater(() -> {
+          graphics.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        });
+
+        for (Ponto3D ponto3D : pontos) {
+          Ponto2D ponto2D = Projection.project(ponto3D, sliderHorizontal.getValue(), sliderVertical.getValue());
+          Platform.runLater(() -> {
+            drawPoint(ponto2D, 2);
+          });
+        }
+
+        try {
+          Thread.sleep(32);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+
+      }
+    }).start();
 
   }
+
+  public void eraseLine(Ponto3D pontoA, Ponto3D pontoB) {
+    Ponto3D vetorDiretor = new Ponto3D(pontoB.getX() - pontoA.getX(), pontoB.getY() - pontoA.getY(),
+        pontoB.getZ() - pontoA.getZ());
+    for (double i = 0; i < 1.0; i += 0.001) {
+      Ponto3D ponto3D = new Ponto3D(pontoA.getX() + (vetorDiretor.getX() * i),
+          pontoA.getY() + (vetorDiretor.getY() * i), pontoA.getZ() + (vetorDiretor.getZ() * i));
+
+      Ponto2D ponto2D = Projection.project(ponto3D, sliderHorizontal.getValue(), sliderVertical.getValue());
+
+      erasePoint(ponto2D, 2);
+    }
+  }
+
 }
