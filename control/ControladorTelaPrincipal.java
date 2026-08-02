@@ -8,6 +8,7 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Alert;
@@ -34,6 +35,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Mesh;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.text.Text;
+import math.DesenharFormas;
 import math.Ponto2D;
 import math.Ponto3D;
 import math.Projection;
@@ -76,46 +78,27 @@ public class ControladorTelaPrincipal implements Initializable {
   @FXML
   public void teste(ActionEvent e) {
 
-    drawLine(new Ponto3D(0, -offsetY, 0), new Ponto3D(0, offsetY, 0));
+    drawLine(new Ponto3D(0, -300, 0), new Ponto3D(0, 300, 0));
     drawLine(new Ponto3D(-300, 0, 0), new Ponto3D(300, 0, 0));
-    drawLine(new Ponto3D(0, 0, -offsetX), new Ponto3D(0, 0, offsetX));
+    drawLine(new Ponto3D(0, 0, -300), new Ponto3D(0, 0, 300));
 
     renderLines();
   }
 
   @FXML
   public void teste2(ActionEvent e) {
-    GraphicsContext gc = canvas.getGraphicsContext2D();
-
-    // gc.strokeLine(x1, y1, x2, y2);
-    // erasePoint(new Point2D(0, 0), 5);
+    addPoints(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0), 100));
   }
 
   public void drawPoint(Ponto2D ponto, double tamanho) {
 
-    graphics.setFill(Color.BLACK);
-    // Parameters: (x-coordinate, y-coordinate, width, height)
-    graphics.fillOval(ponto.getX() + offsetX, offsetY - ponto.getY(), tamanho, tamanho);
-
-    // 4. Draw an outlined circle
-    graphics.setStroke(Color.BLACK);
-    graphics.setLineWidth(tamanho);
-    graphics.strokeOval(ponto.getX() + offsetX, offsetY - ponto.getY(), tamanho, tamanho);
+    graphics.fillRect(ponto.getX() + offsetX, offsetY - ponto.getY(), 2, 2);
 
   }
 
-  public void erasePoint(Ponto2D ponto, double tamanho) {
-    // Makes sure the outline is fully erased
-    tamanho++;
+  public void drawPointColorido(Ponto2D ponto, double tamanho) {
 
-    graphics.setFill(Color.WHITE);
-    // Parameters: (x-coordinate, y-coordinate, width, height)
-    graphics.fillOval(ponto.getX() + offsetX, offsetY - ponto.getY(), tamanho, tamanho);
-
-    // 4. Draw an outlined circle
-    graphics.setStroke(Color.WHITE);
-    graphics.setLineWidth(tamanho);
-    graphics.strokeOval(ponto.getX() + offsetX, offsetY - ponto.getY(), tamanho, tamanho);
+    graphics.fillRect(ponto.getX() + offsetX, offsetY - ponto.getY(), 2, 2);
 
   }
 
@@ -131,43 +114,28 @@ public class ControladorTelaPrincipal implements Initializable {
   }
 
   public void renderLines() {
-    new Thread(() -> {
-      while (true) {
-        ArrayList<Ponto3D> pontosAnteriores = new ArrayList<>(pontos);
+    new AnimationTimer() {
 
-        Platform.runLater(() -> {
-          graphics.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        });
+      @Override
+      public void handle(long now) {
+        graphics.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         for (Ponto3D ponto3D : pontos) {
           Ponto2D ponto2D = Projection.project(ponto3D, sliderHorizontal.getValue(), sliderVertical.getValue());
-          Platform.runLater(() -> {
-            drawPoint(ponto2D, 2);
-          });
-        }
-
-        try {
-          Thread.sleep(32);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
+          drawPoint(ponto2D, 2);
         }
 
       }
-    }).start();
+    }.start();
 
   }
 
-  public void eraseLine(Ponto3D pontoA, Ponto3D pontoB) {
-    Ponto3D vetorDiretor = new Ponto3D(pontoB.getX() - pontoA.getX(), pontoB.getY() - pontoA.getY(),
-        pontoB.getZ() - pontoA.getZ());
-    for (double i = 0; i < 1.0; i += 0.001) {
-      Ponto3D ponto3D = new Ponto3D(pontoA.getX() + (vetorDiretor.getX() * i),
-          pontoA.getY() + (vetorDiretor.getY() * i), pontoA.getZ() + (vetorDiretor.getZ() * i));
-
-      Ponto2D ponto2D = Projection.project(ponto3D, sliderHorizontal.getValue(), sliderVertical.getValue());
-
-      erasePoint(ponto2D, 2);
-    }
+  public void addPoints(ArrayList<Ponto3D> pontos3D) {
+    Platform.runLater(() -> {
+      for (Ponto3D pontoNovos : pontos3D) {
+        pontos.add(pontoNovos);
+      }
+    });
   }
 
 }
