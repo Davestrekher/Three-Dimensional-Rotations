@@ -3,17 +3,17 @@ package math;
 public class Projection {
 
   private final static double focus = 2;
-  private final static double distance = 2;
+  private final static double distance = 1;
 
   public static Ponto2D project(Ponto3D ponto3D, double anguloHorizontal, double anguloVertical) {
-    double[][] matrixA = { { 1, 0, 0 },
+    double[][] matrixX = { { 1, 0, 0 },
         { 0, Math.cos(anguloVertical), -Math.sin(anguloVertical) },
         { 0, Math.sin(anguloVertical), Math.cos(anguloVertical) } };
-    double[][] matrixB = { { Math.cos(anguloHorizontal), 0, Math.sin(anguloHorizontal) },
+    double[][] matrixY = { { Math.cos(anguloHorizontal), 0, Math.sin(anguloHorizontal) },
         { 0, 1, 0 },
         { -Math.sin(anguloHorizontal), 0, Math.cos(anguloHorizontal) } };
 
-    double[][] matrixRes = multiplicarMatrizes(matrixA, matrixB);
+    double[][] matrixRes = multiplicarMatrizes(matrixX, matrixY);
 
     double[][] matrixXYZ = { { ponto3D.getX() }, { ponto3D.getY() }, { ponto3D.getZ() } };
 

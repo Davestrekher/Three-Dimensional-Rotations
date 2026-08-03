@@ -10,11 +10,13 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -39,6 +41,7 @@ import math.DesenharFormas;
 import math.Ponto2D;
 import math.Ponto3D;
 import math.Projection;
+import math.Rotacao;
 import javafx.scene.text.Font;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
@@ -54,18 +57,47 @@ public class ControladorTelaPrincipal implements Initializable {
   private Slider sliderHorizontal;
   @FXML
   private Slider sliderVertical;
+  @FXML
+  private Slider sliderRotacao;
+  @FXML
+  private ChoiceBox<String> cbEixo;
   private GraphicsContext graphics;
-  private ArrayList<Ponto3D> pontos;
+  private ArrayList<Ponto3D> eixos;
+  private ArrayList<Ponto3D> objeto;
+  private ArrayList<Ponto3D> objetoInicial;
   private double offsetX;
   private double offsetY;
+
+  private double anguloRotacaoX;
+  private double anguloRotacaoY;
+  private double anguloRotacaoZ;
 
   @Override
   public void initialize(URL url, ResourceBundle resource) {
     graphics = canvas.getGraphicsContext2D();
     offsetX = canvas.getWidth() / 2;
     offsetY = canvas.getHeight() / 2;
-    pontos = new ArrayList<>();
-    renderLines();
+    eixos = new ArrayList<>();
+    objeto = new ArrayList<>();
+    objetoInicial = new ArrayList<>();
+
+    cbEixo.setItems(FXCollections.observableArrayList("X", "Y", "Z"));
+
+    cbEixo.setValue("X");
+    cbEixo.getSelectionModel().selectedIndexProperty().addListener((obs, indiceAntigo, indiceNovo) -> {
+      sliderRotacao.setValue(selecionarEixo((int) indiceNovo));
+    });
+
+    sliderRotacao.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
+      rotacionarObjeto(sliderRotacao.getValue(),
+          cbEixo.getSelectionModel().getSelectedIndex());
+    });
+
+    anguloRotacaoX = 0;
+    anguloRotacaoY = 0;
+    anguloRotacaoZ = 0;
+
+    render();
   }
 
   @FXML
@@ -77,34 +109,36 @@ public class ControladorTelaPrincipal implements Initializable {
 
   @FXML
   public void teste2(ActionEvent e) {
-    //addPoints(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0), 100));
-    addPoints(DesenharFormas.desenharPlanoRaso(100,100, new Ponto3D(-50, 0, -50), 1000));
+    // addPoints(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0), 100));
+    // addPoints(DesenharFormas.desenharPlanoRaso(100,100, new Ponto3D(-50, 0, -50),
+    // 1000));
+    objeto.addAll(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0), 100));
+    objetoInicial.addAll(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0), 100));
+    // objeto.addAll(DesenharFormas.desenharPlanoRaso(100, 100, new Ponto3D(-50, 0,
+    // -50), 1000));
   }
 
   private void drawPoint(Ponto2D ponto, double tamanho) {
     graphics.fillRect(ponto.getX() + offsetX, offsetY - ponto.getY(), 2, 2);
   }
 
-
   private void drawLine(Ponto3D pontoA, Ponto3D pontoB) {
-      Ponto3D vetorDiretor = new Ponto3D(pontoB.getX() - pontoA.getX(), pontoB.getY() - pontoA.getY(),
-      pontoB.getZ() - pontoA.getZ());
-      for (double i = 0; i < 1.0; i += 0.001) {
-           Ponto3D ponto3D = new Ponto3D(pontoA.getX() + (vetorDiretor.getX() * i),
-           pontoA.getY() + (vetorDiretor.getY() * i), pontoA.getZ() + (vetorDiretor.getZ() * i));
-           pontos.add(ponto3D);
-      }
+    Ponto3D vetorDiretor = new Ponto3D(pontoB.getX() - pontoA.getX(), pontoB.getY() - pontoA.getY(),
+        pontoB.getZ() - pontoA.getZ());
+    for (double i = 0; i < 1.0; i += 0.001) {
+      Ponto3D ponto3D = new Ponto3D(pontoA.getX() + (vetorDiretor.getX() * i),
+          pontoA.getY() + (vetorDiretor.getY() * i), pontoA.getZ() + (vetorDiretor.getZ() * i));
+      eixos.add(ponto3D);
+    }
   }
 
-  private void renderLines() {
-     new AnimationTimer() {
+  private void render() {
+    new AnimationTimer() {
       @Override
       public void handle(long now) {
-           graphics.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-           for (Ponto3D ponto3D : pontos) {
-              Ponto2D ponto2D = Projection.project(ponto3D, sliderHorizontal.getValue(), sliderVertical.getValue());
-              drawPoint(ponto2D, 2);
-           }
+        graphics.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        renderPoints(eixos);
+        renderPoints(objeto);
       }
     }.start();
   }
@@ -112,18 +146,54 @@ public class ControladorTelaPrincipal implements Initializable {
   private void addPoints(ArrayList<Ponto3D> pontos3D) {
     Platform.runLater(() -> {
       for (Ponto3D pontoNovos : pontos3D) {
-        pontos.add(pontoNovos);
+        eixos.add(pontoNovos);
       }
     });
   }
 
+  private void renderPoints(ArrayList<Ponto3D> p) {
+    for (Ponto3D ponto3D : p) {
+      Ponto2D ponto2D = Projection.project(ponto3D, sliderHorizontal.getValue(), sliderVertical.getValue());
+      drawPoint(ponto2D, 2);
+    }
+  }
 
-/*****************************************************************************
-*  public void drawPointColorido(Ponto2D ponto, double tamanho) {
-*
-*    graphics.fillRect(ponto.getX() + offsetX, offsetY - ponto.getY(), 2, 2);
-*
-*  }
-*****************************************************************************/
+  private void rotacionarObjeto(double angulo, int eixo) {
+    switch (eixo) {
+      case 0:
+        anguloRotacaoX = angulo;
+        break;
+      case 1:
+        anguloRotacaoY = angulo;
+        break;
+      case 2:
+        anguloRotacaoZ = angulo;
+        break;
+      default:
+        anguloRotacaoX = angulo;
+    }
+    objeto = Rotacao.angulosDeEuler(objetoInicial, anguloRotacaoX, anguloRotacaoY, anguloRotacaoZ);
+  }
+
+  private double selecionarEixo(int eixo) {
+    switch (eixo) {
+      case 0:
+        return anguloRotacaoX;
+      case 1:
+        return anguloRotacaoY;
+      case 2:
+        return anguloRotacaoZ;
+      default:
+        return anguloRotacaoX;
+    }
+  }
+
+  /*****************************************************************************
+   * public void drawPointColorido(Ponto2D ponto, double tamanho) {
+   *
+   * graphics.fillRect(ponto.getX() + offsetX, offsetY - ponto.getY(), 2, 2);
+   *
+   * }
+   *****************************************************************************/
 
 }

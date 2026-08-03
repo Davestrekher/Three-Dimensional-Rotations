@@ -2,6 +2,7 @@
 
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
@@ -13,9 +14,11 @@
          <children>
             <Button layoutX="109.0" layoutY="216.0" mnemonicParsing="false" onAction="#teste" text="Button" />
             <Button layoutX="92.0" layoutY="277.0" mnemonicParsing="false" onAction="#teste2" text="Button" />
+            <ChoiceBox fx:id="cbEixo" layoutX="64.0" layoutY="398.0" prefWidth="150.0" />
          </children>
       </Pane>
       <Slider fx:id="sliderHorizontal" layoutX="483.0" layoutY="773.0" max="6.2831" min="-6.2831" prefHeight="16.0" prefWidth="636.0" />
-      <Slider fx:id="sliderVertical" layoutX="54.0" layoutY="374.0" max="6.2831" min="-6.2831" prefHeight="16.0" prefWidth="636.0" rotate="90.0" />
+      <Slider fx:id="sliderVertical" layoutX="54.0" layoutY="374.0" max="1.5707" min="-1.5707" prefHeight="16.0" prefWidth="636.0" rotate="90.0" />
+      <Slider fx:id="sliderRotacao" layoutX="90.0" layoutY="718.0" max="1.5707" min="-1.5707" prefHeight="16.0" prefWidth="1190.0" />
    </children>
 </AnchorPane>
