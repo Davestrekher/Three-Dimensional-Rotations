@@ -48,94 +48,82 @@ import javafx.scene.image.ImageView;
 public class ControladorTelaPrincipal implements Initializable {
   @FXML
   private AnchorPane raiz;
-
   @FXML
   private Canvas canvas;
-
   @FXML
   private Slider sliderHorizontal;
-
   @FXML
   private Slider sliderVertical;
-
+  private GraphicsContext graphics;
+  private ArrayList<Ponto3D> pontos;
   private double offsetX;
   private double offsetY;
-
-  private GraphicsContext graphics;
-
-  private ArrayList<Ponto3D> pontos;
 
   @Override
   public void initialize(URL url, ResourceBundle resource) {
     graphics = canvas.getGraphicsContext2D();
-
     offsetX = canvas.getWidth() / 2;
     offsetY = canvas.getHeight() / 2;
-
     pontos = new ArrayList<>();
-  }
-
-  @FXML
-  public void teste(ActionEvent e) {
-
-    drawLine(new Ponto3D(0, -300, 0), new Ponto3D(0, 300, 0));
-    drawLine(new Ponto3D(-300, 0, 0), new Ponto3D(300, 0, 0));
-    drawLine(new Ponto3D(0, 0, -300), new Ponto3D(0, 0, 300));
-
     renderLines();
   }
 
   @FXML
+  public void teste(ActionEvent e) {
+    drawLine(new Ponto3D(0, -300, 0), new Ponto3D(0, 300, 0));
+    drawLine(new Ponto3D(-300, 0, 0), new Ponto3D(300, 0, 0));
+    drawLine(new Ponto3D(0, 0, -300), new Ponto3D(0, 0, 300));
+  }
+
+  @FXML
   public void teste2(ActionEvent e) {
-    addPoints(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0), 100));
+    //addPoints(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0), 100));
+    addPoints(DesenharFormas.desenharPlanoRaso(100,100, new Ponto3D(-50, 0, -50), 1000));
   }
 
-  public void drawPoint(Ponto2D ponto, double tamanho) {
-
+  private void drawPoint(Ponto2D ponto, double tamanho) {
     graphics.fillRect(ponto.getX() + offsetX, offsetY - ponto.getY(), 2, 2);
-
   }
 
-  public void drawPointColorido(Ponto2D ponto, double tamanho) {
 
-    graphics.fillRect(ponto.getX() + offsetX, offsetY - ponto.getY(), 2, 2);
-
+  private void drawLine(Ponto3D pontoA, Ponto3D pontoB) {
+      Ponto3D vetorDiretor = new Ponto3D(pontoB.getX() - pontoA.getX(), pontoB.getY() - pontoA.getY(),
+      pontoB.getZ() - pontoA.getZ());
+      for (double i = 0; i < 1.0; i += 0.001) {
+           Ponto3D ponto3D = new Ponto3D(pontoA.getX() + (vetorDiretor.getX() * i),
+           pontoA.getY() + (vetorDiretor.getY() * i), pontoA.getZ() + (vetorDiretor.getZ() * i));
+           pontos.add(ponto3D);
+      }
   }
 
-  public void drawLine(Ponto3D pontoA, Ponto3D pontoB) {
-    Ponto3D vetorDiretor = new Ponto3D(pontoB.getX() - pontoA.getX(), pontoB.getY() - pontoA.getY(),
-        pontoB.getZ() - pontoA.getZ());
-    for (double i = 0; i < 1.0; i += 0.001) {
-      Ponto3D ponto3D = new Ponto3D(pontoA.getX() + (vetorDiretor.getX() * i),
-          pontoA.getY() + (vetorDiretor.getY() * i), pontoA.getZ() + (vetorDiretor.getZ() * i));
-
-      pontos.add(ponto3D);
-    }
-  }
-
-  public void renderLines() {
-    new AnimationTimer() {
-
+  private void renderLines() {
+     new AnimationTimer() {
       @Override
       public void handle(long now) {
-        graphics.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-
-        for (Ponto3D ponto3D : pontos) {
-          Ponto2D ponto2D = Projection.project(ponto3D, sliderHorizontal.getValue(), sliderVertical.getValue());
-          drawPoint(ponto2D, 2);
-        }
-
+           graphics.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+           for (Ponto3D ponto3D : pontos) {
+              Ponto2D ponto2D = Projection.project(ponto3D, sliderHorizontal.getValue(), sliderVertical.getValue());
+              drawPoint(ponto2D, 2);
+           }
       }
     }.start();
-
   }
 
-  public void addPoints(ArrayList<Ponto3D> pontos3D) {
+  private void addPoints(ArrayList<Ponto3D> pontos3D) {
     Platform.runLater(() -> {
       for (Ponto3D pontoNovos : pontos3D) {
         pontos.add(pontoNovos);
       }
     });
   }
+
+
+/*****************************************************************************
+*  public void drawPointColorido(Ponto2D ponto, double tamanho) {
+*
+*    graphics.fillRect(ponto.getX() + offsetX, offsetY - ponto.getY(), 2, 2);
+*
+*  }
+*****************************************************************************/
 
 }
