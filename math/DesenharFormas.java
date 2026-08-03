@@ -3,10 +3,10 @@ package math;
 import java.util.ArrayList;
 
 public class DesenharFormas {
-  public static ArrayList<Ponto3D> desenharCirculoHorizontal(Ponto3D pontoInicial, double r) {
+  public static ArrayList<Ponto3D> desenharCirculoHorizontal(Ponto3D pontoInicial, double r, double numeroPontos) {
     ArrayList<Ponto3D> pontos = new ArrayList<>();
 
-    for (double i = -r; i < r; i += 0.01) {
+    for (double i = -r; i < r; i += 2*r/numeroPontos) {
       double x = i + pontoInicial.getX();
       double y = pontoInicial.getY();
       double z = pontoInicial.getZ() + Math.sqrt(r * r - (i * i));
@@ -22,11 +22,30 @@ public class DesenharFormas {
 
     return pontos;
   }
+  
 
-  public static ArrayList<Ponto3D> desenharCirculoVertical(Ponto3D pontoInicial, double r) {
+  public static ArrayList<Ponto3D> desenharPlanoRaso(double largura, double comprimento, Ponto3D pontoInicial, double numeroPontos) {
+        ArrayList<Ponto3D> pontos = new ArrayList<>();  
+        Ponto3D vetorLinhaParalela = new  Ponto3D(largura, 0, 0);
+        Ponto3D vetorPerpendicular = new Ponto3D(0,0,comprimento);
+        Ponto3D pontoAtual = pontoInicial;
+
+        for(double i = 0; i < 1; i += 1/Math.sqrt(numeroPontos)) {
+            for(double j = 0; j < 1; j += 1/Math.sqrt(numeroPontos)) {
+                 double x = pontoInicial.getX()+vetorLinhaParalela.getX()*i+vetorPerpendicular.getX()*j; 
+                 double y = pontoInicial.getY()+vetorLinhaParalela.getY()*i+vetorPerpendicular.getY()*j; 
+                 double z = pontoInicial.getZ()+vetorLinhaParalela.getZ()*i+vetorPerpendicular.getZ()*j;
+                 pontos.add(new Ponto3D(x,y,z));
+            } 
+        }
+        
+        return pontos;
+  }
+
+
+  public static ArrayList<Ponto3D> desenharCirculoVertical(Ponto3D pontoInicial, double r, double numeroPontos) {
     ArrayList<Ponto3D> pontos = new ArrayList<>();
-
-    for (double i = -r; i < r; i += 0.01) {
+    for (double i = -r; i < r; i += 2*r/numeroPontos) {
       double x = pontoInicial.getX();
       double y = i + pontoInicial.getY();
       double z = pontoInicial.getZ() + Math.sqrt(r * r - (i * i));
@@ -46,12 +65,15 @@ public class DesenharFormas {
   public static ArrayList<Ponto3D> desenharEsfera(Ponto3D pontoInicial, double r) {
     ArrayList<Ponto3D> pontos = new ArrayList<>();
 
-    for (double i = -r; i < r; i += 10) {
+    for (double i = -r; i < r; i += 8) {
       double raioCorte = Math.sqrt(r * r - i * i);
 
       pontos.addAll(
           desenharCirculoHorizontal(new Ponto3D(pontoInicial.getX(), pontoInicial.getY() + i, pontoInicial.getZ()),
-              raioCorte));
+              raioCorte, 200));
+      pontos.addAll(
+          desenharCirculoVertical(new Ponto3D(pontoInicial.getX()+i, pontoInicial.getY(), pontoInicial.getZ()),
+              raioCorte, 200)); 
     }
     return pontos;
   }
