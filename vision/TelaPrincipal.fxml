@@ -3,7 +3,9 @@
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
 
@@ -15,6 +17,12 @@
             <Button layoutX="109.0" layoutY="216.0" mnemonicParsing="false" onAction="#teste" text="Button" />
             <Button layoutX="92.0" layoutY="277.0" mnemonicParsing="false" onAction="#teste2" text="Button" />
             <ChoiceBox fx:id="cbEixo" layoutX="64.0" layoutY="398.0" prefWidth="150.0" />
+            <Spinner fx:id="spinnerX" editable="true" layoutX="88.0" layoutY="72.0" prefHeight="26.0" prefWidth="78.0" />
+            <Spinner fx:id="spinnerZ" editable="true" layoutX="88.0" layoutY="124.0" prefHeight="26.0" prefWidth="78.0" />
+            <Spinner fx:id="spinnerY" editable="true" layoutX="88.0" layoutY="98.0" prefHeight="26.0" prefWidth="78.0" />
+            <Label layoutX="48.0" layoutY="76.0" text="X" />
+            <Label layoutX="48.0" layoutY="128.0" text="Z" />
+            <Label layoutX="48.0" layoutY="104.0" text="Y" />
          </children>
       </Pane>
       <Slider fx:id="sliderHorizontal" layoutX="483.0" layoutY="773.0" max="6.2831" min="-6.2831" prefHeight="16.0" prefWidth="636.0" />

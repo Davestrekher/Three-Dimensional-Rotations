@@ -3,7 +3,7 @@ package math;
 public class Projection {
 
   private final static double focus = 2;
-  private final static double distance = 1;
+  private final static double distance = 2;
 
   public static Ponto2D project(Ponto3D ponto3D, double anguloHorizontal, double anguloVertical) {
     double[][] matrixX = { { 1, 0, 0 },
