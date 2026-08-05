@@ -122,9 +122,9 @@ public class ControladorTelaPrincipal implements Initializable {
 
   @FXML
   public void teste2(ActionEvent e) {
-    objeto.addAll(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0), 100));
+    objeto.addAll(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0), 50));
     objetoInicial.addAll(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0),
-        100));
+        50));
 
     // objeto.addAll(DesenharFormas.reta(new Ponto3D(1.0,
     // 1.0, 1.0), 100.0));

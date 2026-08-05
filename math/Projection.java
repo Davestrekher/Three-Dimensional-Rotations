@@ -2,10 +2,11 @@ package math;
 
 public class Projection {
 
-  private final static double focus = 2;
+  private final static double focus = 200;
   private final static double distance = 2;
 
   public static Ponto2D project(Ponto3D ponto3D, double anguloHorizontal, double anguloVertical) {
+
     double[][] matrixX = { { 1, 0, 0 },
         { 0, Math.cos(anguloVertical), -Math.sin(anguloVertical) },
         { 0, Math.sin(anguloVertical), Math.cos(anguloVertical) } };
@@ -19,8 +20,11 @@ public class Projection {
 
     double[][] matrixFinal = multiplicarMatrizes(matrixRes, matrixXYZ);
 
-    double x = (matrixFinal[0][0] / distance * focus);
-    double y = (matrixFinal[1][0] / distance * focus);
+    double x = (20.0 - matrixFinal[2][0] > 0) ? (matrixFinal[0][0] * focus / (80.0 - matrixFinal[2][0])) : 0;
+    double y = (20.0 - matrixFinal[2][0] > 0) ? (matrixFinal[1][0] * focus / (80.0 - matrixFinal[2][0])) : 0;
+
+    // double x = (matrixFinal[0][0] / matrixFinal[2][0] * focus);
+    // double y = (matrixFinal[1][0] / matrixFinal[2][0] * focus);
 
     return new Ponto2D(x, y);
   }
