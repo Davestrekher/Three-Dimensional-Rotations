@@ -24,6 +24,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -112,6 +113,14 @@ public class ControladorTelaPrincipal implements Initializable {
     anguloRotacaoY = 0;
     anguloRotacaoZ = 0;
 
+    SpinnerValueFactory<Double> valueFactoryX = new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 300, 0);
+    SpinnerValueFactory<Double> valueFactoryY = new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 300, 0);
+    SpinnerValueFactory<Double> valueFactoryZ = new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 300, 0);
+
+    spinnerX.setValueFactory(valueFactoryX);
+    spinnerY.setValueFactory(valueFactoryY);
+    spinnerZ.setValueFactory(valueFactoryZ);
+
     render();
   }
 
@@ -175,7 +184,19 @@ public class ControladorTelaPrincipal implements Initializable {
       default:
         anguloRotacaoX = angulo;
     }
-    objeto = Rotacao.angulosDeEuler(objetoInicial, anguloRotacaoX, anguloRotacaoY, anguloRotacaoZ);
+    if (spinnerX.getValue() == null || spinnerY.getValue() == null || spinnerZ.getValue() == null) {
+      System.out.println("deu pau");
+      return;
+    }
+    objeto = Rotacao.rotacionarUsandoQuaternios(objetoInicial,
+        new Ponto3D(spinnerX.getValue(), spinnerY.getValue(), spinnerZ.getValue()),
+        anguloRotacaoX);
+
+    // ArrayList<Ponto3D> teste = new ArrayList<>();
+    // teste.add(new Ponto3D(3, 0, 0));
+
+    // System.out.println(Rotacao.rotacionarUsandoQuaternios(teste, new Ponto3D(0,
+    // 1, 0), Math.PI / 2.0).toString());
   }
 
   private double selecionarEixo(int eixo) {

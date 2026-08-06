@@ -32,7 +32,7 @@ public class OperacaoQuaternios {
         qConjugado.getK() / modulo);
   }
 
-  public static double calculaModulo(Quaternio q) {
+  private static double calculaModulo(Quaternio q) {
     return Math.sqrt(q.getA() * q.getA() + q.getI() * q.getI() + q.getJ() * q.getJ() + q.getK() * q.getK());
   }
 }

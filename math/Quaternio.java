@@ -18,7 +18,7 @@ public class Quaternio {
   }
 
   public double getI() {
-    return j;
+    return i;
   }
 
   public double getJ() {
