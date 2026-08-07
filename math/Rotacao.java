@@ -18,12 +18,12 @@ public class Rotacao {
         { Math.sin(anguloZ), Math.cos(anguloZ), 0 },
         { 0, 0, 1 } };
 
-    double[][] matrixGeral = Projection.multiplicarMatrizes(Projection.multiplicarMatrizes(matrixZ, matrixY), matrixX);
+    double[][] matrixGeral = multiplicarMatrizes(multiplicarMatrizes(matrixZ, matrixX), matrixY);
 
     ArrayList<Ponto3D> novosPontos = new ArrayList<>();
     for (Ponto3D ponto : pontos) {
       double[][] matrixXYZ = { { ponto.getX() }, { ponto.getY() }, { ponto.getZ() } };
-      double[][] matrixFinal = Projection.multiplicarMatrizes(matrixGeral, matrixXYZ);
+      double[][] matrixFinal = multiplicarMatrizes(matrixGeral, matrixXYZ);
 
       double x = matrixFinal[0][0];
       double y = matrixFinal[1][0];
@@ -33,6 +33,15 @@ public class Rotacao {
     }
 
     return novosPontos;
+  }
+
+  public static ArrayList<Ponto3D> angulosDeEulerReta(Ponto3D reta, double angulo, ArrayList<Ponto3D> pontos) {
+    double X = reta.getX();
+    double Y = reta.getY();
+    double Z = reta.getZ();
+    double anguloTeta = Math.atan(Y / Z);
+    double anguloFi = Math.atan(Y / Math.sqrt(Z * Z + X * X));
+    return angulosDeEuler(pontos, anguloFi, anguloTeta, angulo);
   }
 
   public static ArrayList<Ponto3D> rotacionarTornoReta(ArrayList<Ponto3D> pontos, Ponto3D vetorDiretor, double angulo) {
@@ -51,14 +60,14 @@ public class Rotacao {
         { Math.sin(angulo), Math.cos(angulo), 0 },
         { 0, 0, 1 } };
 
-    double[][] matrixGeral = Projection.multiplicarMatrizes(matrixMudancaBase,
-        Projection.multiplicarMatrizes(matrixZ, matrixMudancaBaseInvertida));
+    double[][] matrixGeral = multiplicarMatrizes(matrixMudancaBase,
+        multiplicarMatrizes(matrixZ, matrixMudancaBaseInvertida));
 
     ArrayList<Ponto3D> novosPontos = new ArrayList<>();
 
     for (Ponto3D ponto : pontos) {
       double[][] matrixXYZ = { { ponto.getX() }, { ponto.getY() }, { ponto.getZ() } };
-      double[][] matrixFinal = Projection.multiplicarMatrizes(matrixGeral, matrixXYZ);
+      double[][] matrixFinal = multiplicarMatrizes(matrixGeral, matrixXYZ);
 
       double x = matrixFinal[0][0];
       double y = matrixFinal[1][0];
@@ -212,5 +221,19 @@ public class Rotacao {
     }
 
     return novosPontos;
+  }
+
+  private static double[][] multiplicarMatrizes(double[][] X, double[][] Y) {
+    double[][] res = new double[X.length][Y[0].length];
+    for (int i = 0; i < X.length; i++) {
+      for (int j = 0; j < Y[0].length; j++) {
+        res[i][j] = 0;
+        for (int k = 0; k < X[0].length; k++) {
+          res[i][j] += X[i][k] * Y[k][j];
+        }
+      }
+    }
+
+    return res;
   }
 }

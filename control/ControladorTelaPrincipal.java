@@ -40,10 +40,10 @@ import javafx.scene.shape.Mesh;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.text.Text;
 import math.DesenharFormas;
+import math.Observador;
 import math.OperacaoQuaternios;
 import math.Ponto2D;
 import math.Ponto3D;
-import math.Projection;
 import math.Quaternio;
 import math.Rotacao;
 import javafx.scene.text.Font;
@@ -78,8 +78,11 @@ public class ControladorTelaPrincipal implements Initializable {
   private ArrayList<Ponto3D> objeto;
   private ArrayList<Ponto3D> objetoInicial;
   private ArrayList<Ponto3D> plano;
+  private ArrayList<Ponto3D> reta;
   private double offsetX;
   private double offsetY;
+
+  private Observador camera;
 
   private double anguloRotacaoX;
   private double anguloRotacaoY;
@@ -95,7 +98,9 @@ public class ControladorTelaPrincipal implements Initializable {
     eixoZ = new ArrayList<Ponto3D>();
     objeto = new ArrayList<Ponto3D>();
     plano = new ArrayList<Ponto3D>();
+    reta = new ArrayList<Ponto3D>();
     objetoInicial = new ArrayList<Ponto3D>();
+    camera = new Observador(canvas.getHeight(), Math.toRadians(60));
 
     cbEixo.setItems(FXCollections.observableArrayList("X", "Y", "Z"));
 
@@ -129,11 +134,15 @@ public class ControladorTelaPrincipal implements Initializable {
     eixoX.addAll(DesenharFormas.drawLine(new Ponto3D(0, -100, 0), new Ponto3D(0, 100, 0)));
     eixoY.addAll(DesenharFormas.drawLine(new Ponto3D(-100, 0, 0), new Ponto3D(100, 0, 0)));
     eixoZ.addAll(DesenharFormas.drawLine(new Ponto3D(0, 0, -100), new Ponto3D(0, 0, 100)));
-    plano.addAll(DesenharFormas.desenharPlanoRaso(200, 200, new Ponto3D(-100, 0, -100), 5000));
+    // plano.addAll(DesenharFormas.desenharPlanoRaso(200, 200, new Ponto3D(-100, 0,
+    // -100), 5000));
+
   }
 
   @FXML
   public void teste2(ActionEvent e) {
+    reta.addAll(DesenharFormas.drawLine(new Ponto3D(0, 0, 0),
+        new Ponto3D(spinnerX.getValue() * 100, spinnerY.getValue() * 100, spinnerZ.getValue() * 100)));
     objeto.addAll(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0), 50));
     objetoInicial.addAll(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0),
         50));
@@ -159,13 +168,14 @@ public class ControladorTelaPrincipal implements Initializable {
         renderPoints(eixoZ, Color.GREEN);
         renderPoints(objeto, Color.BLACK);
         renderPoints(plano, Color.PINK);
+        renderPoints(reta, Color.PURPLE);
       }
     }.start();
   }
 
   private void renderPoints(ArrayList<Ponto3D> p, Color cor) {
     for (Ponto3D ponto3D : p) {
-      Ponto2D ponto2D = Projection.project(ponto3D, sliderHorizontal.getValue(), sliderVertical.getValue());
+      Ponto2D ponto2D = camera.projecaoOrtografica(ponto3D, sliderHorizontal.getValue(), sliderVertical.getValue());
       drawPoint(ponto2D, 2, cor);
     }
   }
@@ -188,15 +198,13 @@ public class ControladorTelaPrincipal implements Initializable {
       System.out.println("deu pau");
       return;
     }
-    objeto = Rotacao.rotacionarUsandoQuaternios(objetoInicial,
-        new Ponto3D(spinnerX.getValue(), spinnerY.getValue(), spinnerZ.getValue()),
-        anguloRotacaoX);
+    // objeto = Rotacao.rotacionarTornoReta(objetoInicial,
+    // new Ponto3D(spinnerX.getValue(), spinnerY.getValue(), spinnerZ.getValue()),
+    // anguloRotacaoX);
 
-    // ArrayList<Ponto3D> teste = new ArrayList<>();
-    // teste.add(new Ponto3D(3, 0, 0));
+    objeto = Rotacao.angulosDeEulerReta(new Ponto3D(100, 100, 100), anguloRotacaoX,
+        objetoInicial);
 
-    // System.out.println(Rotacao.rotacionarUsandoQuaternios(teste, new Ponto3D(0,
-    // 1, 0), Math.PI / 2.0).toString());
   }
 
   private double selecionarEixo(int eixo) {
