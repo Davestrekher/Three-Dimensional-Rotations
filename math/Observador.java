@@ -15,7 +15,7 @@ public class Observador {
   public Observador(double altura, double fov) {
     x = 0;
     y = 0;
-    z = -100;
+    z = -80;
 
     this.fov = fov;
     this.altura = altura;

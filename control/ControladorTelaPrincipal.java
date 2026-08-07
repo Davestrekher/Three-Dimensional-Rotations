@@ -62,6 +62,8 @@ public class ControladorTelaPrincipal implements Initializable {
   @FXML
   private Slider sliderVertical;
   @FXML
+  private Slider sliderProfundidade;
+  @FXML
   private Slider sliderRotacao;
   @FXML
   private ChoiceBox<String> cbEixo;
@@ -75,6 +77,9 @@ public class ControladorTelaPrincipal implements Initializable {
   private ArrayList<Ponto3D> eixoX;
   private ArrayList<Ponto3D> eixoY;
   private ArrayList<Ponto3D> eixoZ;
+  private ArrayList<Ponto3D> eixoXInicial;
+  private ArrayList<Ponto3D> eixoYInicial;
+  private ArrayList<Ponto3D> eixoZInicial;
   private ArrayList<Ponto3D> objeto;
   private ArrayList<Ponto3D> objetoInicial;
   private ArrayList<Ponto3D> plano;
@@ -96,11 +101,14 @@ public class ControladorTelaPrincipal implements Initializable {
     eixoX = new ArrayList<Ponto3D>();
     eixoY = new ArrayList<Ponto3D>();
     eixoZ = new ArrayList<Ponto3D>();
+    eixoXInicial = new ArrayList<Ponto3D>();
+    eixoYInicial = new ArrayList<Ponto3D>();
+    eixoZInicial = new ArrayList<Ponto3D>();
     objeto = new ArrayList<Ponto3D>();
     plano = new ArrayList<Ponto3D>();
     reta = new ArrayList<Ponto3D>();
     objetoInicial = new ArrayList<Ponto3D>();
-    camera = new Observador(canvas.getHeight(), Math.toRadians(60));
+    camera = new Observador(canvas.getHeight(), Math.toRadians(40));
 
     cbEixo.setItems(FXCollections.observableArrayList("X", "Y", "Z"));
 
@@ -112,6 +120,18 @@ public class ControladorTelaPrincipal implements Initializable {
     sliderRotacao.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
       rotacionarObjeto(sliderRotacao.getValue(),
           cbEixo.getSelectionModel().getSelectedIndex());
+    });
+
+    sliderHorizontal.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
+      rotacionarGeral();
+    });
+
+    sliderVertical.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
+      rotacionarGeral();
+    });
+
+    sliderProfundidade.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
+      rotacionarGeral();
     });
 
     anguloRotacaoX = 0;
@@ -136,6 +156,10 @@ public class ControladorTelaPrincipal implements Initializable {
     eixoZ.addAll(DesenharFormas.drawLine(new Ponto3D(0, 0, -100), new Ponto3D(0, 0, 100)));
     // plano.addAll(DesenharFormas.desenharPlanoRaso(200, 200, new Ponto3D(-100, 0,
     // -100), 5000));
+
+    eixoXInicial.addAll(eixoX);
+    eixoYInicial.addAll(eixoY);
+    eixoZInicial.addAll(eixoZ);
 
   }
 
@@ -175,7 +199,9 @@ public class ControladorTelaPrincipal implements Initializable {
 
   private void renderPoints(ArrayList<Ponto3D> p, Color cor) {
     for (Ponto3D ponto3D : p) {
-      Ponto2D ponto2D = camera.projecaoOrtografica(ponto3D, sliderHorizontal.getValue(), sliderVertical.getValue());
+      // Ponto2D ponto2D = camera.projecaoPerspectiva(ponto3D,
+      // sliderHorizontal.getValue(), sliderVertical.getValue());
+      Ponto2D ponto2D = camera.projecaoPerspectiva(ponto3D, 0, 0);
       drawPoint(ponto2D, 2, cor);
     }
   }
@@ -198,12 +224,28 @@ public class ControladorTelaPrincipal implements Initializable {
       System.out.println("deu pau");
       return;
     }
-    // objeto = Rotacao.rotacionarTornoReta(objetoInicial,
-    // new Ponto3D(spinnerX.getValue(), spinnerY.getValue(), spinnerZ.getValue()),
-    // anguloRotacaoX);
+    objeto = Rotacao.rotacionarTornoReta(objetoInicial,
+        new Ponto3D(spinnerX.getValue(), spinnerY.getValue(), spinnerZ.getValue()),
+        anguloRotacaoX);
 
-    objeto = Rotacao.angulosDeEulerReta(new Ponto3D(100, 100, 100), anguloRotacaoX,
-        objetoInicial);
+    // objeto = Rotacao.angulosDeEulerReta(new Ponto3D(100, 100, 100),
+    // anguloRotacaoX,
+    // objetoInicial);
+
+  }
+
+  private void rotacionarGeral() {
+
+    eixoX = Rotacao.angulosDeEuler(eixoXInicial,
+        sliderHorizontal.getValue(), sliderVertical.getValue(), sliderProfundidade.getValue());
+    eixoY = Rotacao.angulosDeEuler(eixoYInicial,
+        sliderHorizontal.getValue(), sliderVertical.getValue(), sliderProfundidade.getValue());
+    eixoZ = Rotacao.angulosDeEuler(eixoZInicial,
+        sliderHorizontal.getValue(), sliderVertical.getValue(), sliderProfundidade.getValue());
+
+    // objeto = Rotacao.angulosDeEulerReta(new Ponto3D(100, 100, 100),
+    // anguloRotacaoX,
+    // objetoInicial);
 
   }
 

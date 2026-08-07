@@ -28,5 +28,6 @@
       <Slider fx:id="sliderHorizontal" layoutX="483.0" layoutY="773.0" max="6.2831" min="-6.2831" prefHeight="16.0" prefWidth="636.0" />
       <Slider fx:id="sliderVertical" layoutX="54.0" layoutY="374.0" max="1.5707" min="-1.5707" prefHeight="16.0" prefWidth="636.0" rotate="90.0" />
       <Slider fx:id="sliderRotacao" layoutX="90.0" layoutY="718.0" max="1.5707" min="-1.5707" prefHeight="16.0" prefWidth="1190.0" />
+      <Slider fx:id="sliderProfundidade" layoutX="1207.0" layoutY="374.0" max="1.5707" min="-1.5707" prefHeight="16.0" prefWidth="636.0" rotate="90.0" />
    </children>
 </AnchorPane>
