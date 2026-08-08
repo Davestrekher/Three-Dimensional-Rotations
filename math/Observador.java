@@ -15,7 +15,7 @@ public class Observador {
   public Observador(double altura, double fov) {
     x = 0;
     y = 0;
-    z = -80;
+    z = 150;
 
     this.fov = fov;
     this.altura = altura;
@@ -53,19 +53,19 @@ public class Observador {
   public Ponto2D projecaoPerspectiva(Ponto3D ponto3D, double anguloHorizontal, double anguloVertical) {
 
     double[][] matrixX = { { 1, 0, 0 },
-        { 0, Math.cos(anguloVertical), -Math.sin(anguloVertical) },
-        { 0, Math.sin(anguloVertical), Math.cos(anguloVertical) } };
-    double[][] matrixY = { { Math.cos(anguloHorizontal), 0, Math.sin(anguloHorizontal) },
+        { 0, Math.cos(anguloVertical), Math.sin(anguloVertical) },
+        { 0, -Math.sin(anguloVertical), Math.cos(anguloVertical) } };
+    double[][] matrixY = { { Math.cos(anguloHorizontal), 0, -Math.sin(anguloHorizontal) },
         { 0, 1, 0 },
-        { -Math.sin(anguloHorizontal), 0, Math.cos(anguloHorizontal) } };
+        { Math.sin(anguloHorizontal), 0, Math.cos(anguloHorizontal) } };
 
     double[][] matrixRes = multiplicarMatrizes(matrixX, matrixY);
 
-    double[][] matrixXYZ = { { ponto3D.getX() - getX() }, { ponto3D.getY() - getY() }, { ponto3D.getZ() - getZ() } };
+    double[][] matrixXYZ = { { ponto3D.getX() }, { ponto3D.getY() }, { ponto3D.getZ() } };
 
     double[][] matrixFinal = multiplicarMatrizes(matrixRes, matrixXYZ);
 
-    double z = matrixFinal[2][0];
+    double z = matrixFinal[2][0] - getZ();
 
     double x = focus * matrixFinal[0][0] / z;
     double y = focus * matrixFinal[1][0] / z;
@@ -97,5 +97,13 @@ public class Observador {
 
   public double getZ() {
     return z;
+  }
+
+  public void aproximar() {
+    z += 10;
+  }
+
+  public void afastar() {
+    z -= 10;
   }
 }

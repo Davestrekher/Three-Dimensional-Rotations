@@ -83,9 +83,12 @@ public class ControladorTelaPrincipal implements Initializable {
   private ArrayList<Ponto3D> objeto;
   private ArrayList<Ponto3D> objetoInicial;
   private ArrayList<Ponto3D> plano;
+  private ArrayList<Ponto3D> planoInicial;
   private ArrayList<Ponto3D> reta;
   private double offsetX;
   private double offsetY;
+  private double mouseX;
+  private double mouseY;
 
   private Observador camera;
 
@@ -106,6 +109,7 @@ public class ControladorTelaPrincipal implements Initializable {
     eixoZInicial = new ArrayList<Ponto3D>();
     objeto = new ArrayList<Ponto3D>();
     plano = new ArrayList<Ponto3D>();
+    planoInicial = new ArrayList<Ponto3D>();
     reta = new ArrayList<Ponto3D>();
     objetoInicial = new ArrayList<Ponto3D>();
     camera = new Observador(canvas.getHeight(), Math.toRadians(40));
@@ -123,15 +127,28 @@ public class ControladorTelaPrincipal implements Initializable {
     });
 
     sliderHorizontal.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
+      anguloRotacaoY = sliderHorizontal.getValue();
       rotacionarGeral();
     });
 
     sliderVertical.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
+      anguloRotacaoX = sliderVertical.getValue();
       rotacionarGeral();
     });
 
     sliderProfundidade.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
+      anguloRotacaoZ = sliderVertical.getValue();
       rotacionarGeral();
+    });
+
+    canvas.setOnScroll(event -> {
+      double delta = event.getDeltaY();
+
+      if (delta > 0) {
+        camera.afastar();
+      } else if (delta < 0) {
+        camera.aproximar();
+      }
     });
 
     anguloRotacaoX = 0;
@@ -146,20 +163,43 @@ public class ControladorTelaPrincipal implements Initializable {
     spinnerY.setValueFactory(valueFactoryY);
     spinnerZ.setValueFactory(valueFactoryZ);
 
+    canvas.setOnMousePressed(event -> {
+      mouseX = event.getX();
+      mouseY = event.getY();
+    });
+
+    canvas.setOnMouseDragged(event -> {
+
+      double deltaX = event.getX() - mouseX;
+      double deltaY = event.getY() - mouseY;
+
+      double sensibilidade = 0.01;
+
+      anguloRotacaoX -= deltaX * sensibilidade;
+
+      anguloRotacaoY -= deltaY * sensibilidade;
+
+      mouseX = event.getX();
+      mouseY = event.getY();
+
+      rotacionarGeral();
+    });
+
     render();
   }
 
   @FXML
   public void teste(ActionEvent e) {
-    eixoX.addAll(DesenharFormas.drawLine(new Ponto3D(0, -100, 0), new Ponto3D(0, 100, 0)));
-    eixoY.addAll(DesenharFormas.drawLine(new Ponto3D(-100, 0, 0), new Ponto3D(100, 0, 0)));
-    eixoZ.addAll(DesenharFormas.drawLine(new Ponto3D(0, 0, -100), new Ponto3D(0, 0, 100)));
-    // plano.addAll(DesenharFormas.desenharPlanoRaso(200, 200, new Ponto3D(-100, 0,
-    // -100), 5000));
+    eixoX.addAll(DesenharFormas.drawLine(new Ponto3D(0, -85, 0), new Ponto3D(0, 85, 0)));
+    eixoY.addAll(DesenharFormas.drawLine(new Ponto3D(-85, 0, 0), new Ponto3D(85, 0, 0)));
+    eixoZ.addAll(DesenharFormas.drawLine(new Ponto3D(0, 0, -85), new Ponto3D(0, 0, 85)));
+    plano.addAll(DesenharFormas.desenharPlanoRaso(170, 170, new Ponto3D(-85, 0,
+        -85), 5000));
 
     eixoXInicial.addAll(eixoX);
     eixoYInicial.addAll(eixoY);
     eixoZInicial.addAll(eixoZ);
+    planoInicial.addAll(plano);
 
   }
 
@@ -167,9 +207,9 @@ public class ControladorTelaPrincipal implements Initializable {
   public void teste2(ActionEvent e) {
     reta.addAll(DesenharFormas.drawLine(new Ponto3D(0, 0, 0),
         new Ponto3D(spinnerX.getValue() * 100, spinnerY.getValue() * 100, spinnerZ.getValue() * 100)));
-    objeto.addAll(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0), 50));
+    objeto.addAll(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0), 25));
     objetoInicial.addAll(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0),
-        50));
+        25));
 
     // objeto.addAll(DesenharFormas.reta(new Ponto3D(1.0,
     // 1.0, 1.0), 100.0));
@@ -236,12 +276,28 @@ public class ControladorTelaPrincipal implements Initializable {
 
   private void rotacionarGeral() {
 
-    eixoX = Rotacao.angulosDeEuler(eixoXInicial,
-        sliderHorizontal.getValue(), sliderVertical.getValue(), sliderProfundidade.getValue());
-    eixoY = Rotacao.angulosDeEuler(eixoYInicial,
-        sliderHorizontal.getValue(), sliderVertical.getValue(), sliderProfundidade.getValue());
-    eixoZ = Rotacao.angulosDeEuler(eixoZInicial,
-        sliderHorizontal.getValue(), sliderVertical.getValue(), sliderProfundidade.getValue());
+    eixoX = Rotacao.angulosDeEuler(eixoXInicial, anguloRotacaoY, anguloRotacaoX,
+        sliderProfundidade.getValue());
+    eixoY = Rotacao.angulosDeEuler(eixoYInicial, anguloRotacaoY, anguloRotacaoX,
+        sliderProfundidade.getValue());
+    eixoZ = Rotacao.angulosDeEuler(eixoZInicial, anguloRotacaoY, anguloRotacaoX,
+        sliderProfundidade.getValue());
+
+    plano = Rotacao.angulosDeEuler(planoInicial, anguloRotacaoY, anguloRotacaoX,
+        sliderProfundidade.getValue());
+    objeto = Rotacao.angulosDeEuler(objetoInicial, anguloRotacaoY, anguloRotacaoX,
+        sliderProfundidade.getValue());
+    /*
+     * eixoX = Rotacao.rotacionarUsandoQuaternios(eixoXInicial,
+     * new Ponto3D(spinnerX.getValue(), spinnerY.getValue(), spinnerZ.getValue()),
+     * sliderRotacao.getValue());
+     * eixoY = Rotacao.rotacionarUsandoQuaternios(eixoYInicial,
+     * new Ponto3D(spinnerX.getValue(), spinnerY.getValue(), spinnerZ.getValue()),
+     * sliderRotacao.getValue());
+     * eixoZ = Rotacao.rotacionarUsandoQuaternios(eixoZInicial,
+     * new Ponto3D(spinnerX.getValue(), spinnerY.getValue(), spinnerZ.getValue()),
+     * sliderRotacao.getValue());
+     */
 
     // objeto = Rotacao.angulosDeEulerReta(new Ponto3D(100, 100, 100),
     // anguloRotacaoX,

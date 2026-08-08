@@ -18,7 +18,7 @@ public class Rotacao {
         { Math.sin(anguloZ), Math.cos(anguloZ), 0 },
         { 0, 0, 1 } };
 
-    double[][] matrixGeral = multiplicarMatrizes(multiplicarMatrizes(matrixZ, matrixX), matrixY);
+    double[][] matrixGeral = multiplicarMatrizes(multiplicarMatrizes(matrixX, matrixY), matrixZ);
 
     ArrayList<Ponto3D> novosPontos = new ArrayList<>();
     for (Ponto3D ponto : pontos) {
@@ -204,12 +204,6 @@ public class Rotacao {
     Quaternio P = new Quaternio(cosseno, seno * vetorNormalizado.getX(), seno * vetorNormalizado.getY(),
         seno * vetorNormalizado.getZ());
     Quaternio conjugadoP = OperacaoQuaternios.inversa(P);
-    // Quaternio conjugadoP2 = new Quaternio(-cosseno, -seno *
-    // vetorNormalizado.getX(), -seno * vetorNormalizado.getY(),
-    // -seno * vetorNormalizado.getZ());
-
-    System.out.println("conjugado1: " + conjugadoP.toString());
-    // System.out.println("conjugado2: " + conjugadoP2.toString());
 
     ArrayList<Ponto3D> novosPontos = new ArrayList<>();
     for (Ponto3D ponto : pontos) {
