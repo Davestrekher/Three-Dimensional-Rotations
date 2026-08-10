@@ -34,7 +34,34 @@ public class Rotacao {
 
     return novosPontos;
   }
+  
+  public static Ponto3D angulosDeEuler(Ponto3D pontos, double anguloX, double anguloY,
+      double anguloZ) {
+    double[][] matrixX = { { 1, 0, 0 },
+        { 0, Math.cos(anguloX), -Math.sin(anguloX) },
+        { 0, Math.sin(anguloX), Math.cos(anguloX) } };
 
+    double[][] matrixY = { { Math.cos(anguloY), 0, Math.sin(anguloY) },
+        { 0, 1, 0 },
+        { -Math.sin(anguloY), 0, Math.cos(anguloY) } };
+
+    double[][] matrixZ = { { Math.cos(anguloZ), -Math.sin(anguloZ), 0 },
+        { Math.sin(anguloZ), Math.cos(anguloZ), 0 },
+        { 0, 0, 1 } };
+
+    double[][] matrixGeral = multiplicarMatrizes(multiplicarMatrizes(matrixX, matrixY), matrixZ);
+
+    ArrayList<Ponto3D> novosPontos = new ArrayList<>();
+    double[][] matrixXYZ = { { pontos.getX() }, { pontos.getY() }, { pontos.getZ() } };
+    double[][] matrixFinal = multiplicarMatrizes(matrixGeral, matrixXYZ);
+
+    double x = matrixFinal[0][0];
+    double y = matrixFinal[1][0];
+    double z = matrixFinal[2][0];
+
+    return new Ponto3D(x,y,z);
+  }
+  
   public static ArrayList<Ponto3D> angulosDeEulerReta(Ponto3D reta, double angulo, ArrayList<Ponto3D> pontos) {
     double X = reta.getX();
     double Y = reta.getY();
