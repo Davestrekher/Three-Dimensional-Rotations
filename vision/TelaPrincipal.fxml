@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ChoiceBox?>
@@ -8,26 +9,75 @@
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.shape.Line?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1600.0" style="-fx-background-color: #FFFFFF;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="control.ControladorTelaPrincipal">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1600.0" style="-fx-background-color: #FFFFFF;" stylesheets="@estilo.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="control.ControladorTelaPrincipal">
    <children>
       <Canvas fx:id="canvas" height="679.0" layoutX="425.0" layoutY="42.0" width="1073.0" />
-      <Pane layoutY="282.0" prefHeight="900.0" prefWidth="265.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <Pane layoutY="282.0" prefHeight="900.0" prefWidth="265.0" styleClass="painel-lateral" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <Button layoutX="109.0" layoutY="216.0" mnemonicParsing="false" onAction="#teste" text="Button" />
-            <Button layoutX="92.0" layoutY="277.0" mnemonicParsing="false" onAction="#teste2" text="Button" />
-            <ChoiceBox fx:id="cbEixo" layoutX="64.0" layoutY="398.0" prefWidth="150.0" />
-            <Spinner fx:id="spinnerX" editable="true" layoutX="88.0" layoutY="72.0" prefHeight="26.0" prefWidth="78.0" />
-            <Spinner fx:id="spinnerZ" editable="true" layoutX="88.0" layoutY="124.0" prefHeight="26.0" prefWidth="78.0" />
-            <Spinner fx:id="spinnerY" editable="true" layoutX="88.0" layoutY="98.0" prefHeight="26.0" prefWidth="78.0" />
-            <Label layoutX="48.0" layoutY="76.0" text="X" />
-            <Label layoutX="48.0" layoutY="128.0" text="Z" />
-            <Label layoutX="48.0" layoutY="104.0" text="Y" />
+            <ChoiceBox fx:id="cbEixo" layoutX="51.0" layoutY="865.0" prefWidth="150.0" />
+            <Label layoutX="94.0" layoutY="781.0" text="X" />
+            <Label layoutX="94.0" layoutY="833.0" text="Z" />
+            <Label layoutX="94.0" layoutY="809.0" text="Y" />
+            <Label layoutX="36.0" layoutY="14.0" styleClass="label-campo" text="Metodo de projeçao" />
+            <Label layoutX="99.0" layoutY="218.0" styleClass="label-campo" text="Objeto" />
+            <Button layoutX="14.0" layoutY="459.0" mnemonicParsing="false" prefHeight="42.0" prefWidth="112.0" text="Projetar">
+               <styleClass>
+                  <String fx:value="botao" />
+                  <String fx:value="botao-entrar" />
+               </styleClass>
+            </Button>
+            <ChoiceBox fx:id="cbObjeto" layoutX="54.0" layoutY="263.0" prefWidth="150.0" />
+            <Spinner fx:id="spinnerObjetoX1" editable="true" layoutX="55.0" layoutY="324.0" prefHeight="26.0" prefWidth="78.0" />
+            <Spinner fx:id="spinnerObjetoZ" editable="true" layoutX="55.0" layoutY="400.0" prefHeight="26.0" prefWidth="78.0" />
+            <Spinner fx:id="spinnerObjetoY" editable="true" layoutX="55.0" layoutY="362.0" prefHeight="26.0" prefWidth="78.0" />
+            <Label layoutX="32.0" layoutY="329.0" styleClass="label-campo-pequeno" text="X" />
+            <Label layoutX="33.0" layoutY="405.0" styleClass="label-campo-pequeno" text="Z" />
+            <Label layoutX="33.0" layoutY="367.0" styleClass="label-campo-pequeno" text="Y" />
+            <Spinner fx:id="spinnerObjetoX11" editable="true" layoutX="165.0" layoutY="375.0" prefHeight="26.0" prefWidth="78.0" />
+            <Label layoutX="171.0" layoutY="349.0" styleClass="label-campo-pequeno" text="Tamanho" />
+            <ChoiceBox fx:id="cbRotacao" layoutX="50.0" layoutY="158.0" prefWidth="150.0" />
+            <Label layoutX="40.0" layoutY="117.0" styleClass="label-campo" text="Metodo de rotaçao" />
+            <Button layoutX="135.0" layoutY="459.0" mnemonicParsing="false" prefHeight="42.0" prefWidth="112.0" text="Apagar">
+               <styleClass>
+                  <String fx:value="botao" />
+                  <String fx:value="botao-sair" />
+               </styleClass>
+            </Button>
+            <Spinner fx:id="spinnerX" editable="true" layoutX="47.0" layoutY="594.0" prefHeight="26.0" prefWidth="78.0" />
+            <Spinner fx:id="spinnerZ" editable="true" layoutX="47.0" layoutY="670.0" prefHeight="26.0" prefWidth="78.0" />
+            <Spinner fx:id="spinnerY" editable="true" layoutX="47.0" layoutY="632.0" prefHeight="26.0" prefWidth="78.0" />
+            <Label layoutX="24.0" layoutY="599.0" styleClass="label-campo-pequeno" text="X" />
+            <Label layoutX="25.0" layoutY="675.0" styleClass="label-campo-pequeno" text="Z" />
+            <Label layoutX="25.0" layoutY="637.0" styleClass="label-campo-pequeno" text="Y" />
+            <Spinner fx:id="spinnerObjetoX111" editable="true" layoutX="157.0" layoutY="645.0" prefHeight="26.0" prefWidth="78.0" />
+            <Label layoutX="163.0" layoutY="619.0" styleClass="label-campo-pequeno" text="Tamanho" />
+            <Line endX="136.0" layoutX="129.0" layoutY="540.0" smooth="false" startX="-138.0" stroke="WHITE" strokeWidth="3.0" />
+            <Line endX="136.0" layoutX="133.0" layoutY="218.0" smooth="false" startX="-138.0" stroke="WHITE" strokeWidth="3.0" />
+            <Line endX="136.0" layoutX="133.0" layoutY="117.0" smooth="false" startX="-138.0" stroke="WHITE" strokeWidth="3.0" />
+            <Label layoutX="107.0" layoutY="549.0" styleClass="label-campo" text="Reta" />
+            <Button layoutX="13.0" layoutY="739.0" mnemonicParsing="false" prefHeight="42.0" prefWidth="112.0" text="Projetar">
+               <styleClass>
+                  <String fx:value="botao" />
+                  <String fx:value="botao-entrar" />
+               </styleClass>
+            </Button>
+            <Button layoutX="134.0" layoutY="739.0" mnemonicParsing="false" prefHeight="42.0" prefWidth="112.0" text="Apagar">
+               <styleClass>
+                  <String fx:value="botao" />
+                  <String fx:value="botao-sair" />
+               </styleClass>
+            </Button>
+            <Label layoutX="18.0" layoutY="794.0" styleClass="label-campo" text="Rotacao em torno da reta" />
+            <Slider fx:id="sliderRotacao" layoutX="5.0" layoutY="836.0" max="1.5707" min="-1.5707" prefHeight="30.0" prefWidth="254.0" />
          </children>
       </Pane>
       <Slider fx:id="sliderHorizontal" layoutX="483.0" layoutY="773.0" max="6.2831" min="-6.2831" prefHeight="16.0" prefWidth="636.0" />
       <Slider fx:id="sliderVertical" layoutX="54.0" layoutY="374.0" max="1.5707" min="-1.5707" prefHeight="16.0" prefWidth="636.0" rotate="90.0" />
-      <Slider fx:id="sliderRotacao" layoutX="90.0" layoutY="718.0" max="1.5707" min="-1.5707" prefHeight="16.0" prefWidth="1190.0" />
       <Slider fx:id="sliderProfundidade" layoutX="1207.0" layoutY="374.0" max="1.5707" min="-1.5707" prefHeight="16.0" prefWidth="636.0" rotate="90.0" />
+      <ChoiceBox fx:id="cbProjecao" layoutX="52.0" layoutY="58.0" prefWidth="150.0" />
+      <Button layoutX="283.0" layoutY="152.0" mnemonicParsing="false" onAction="#teste" text="Button" />
+      <Button layoutX="283.0" layoutY="194.0" mnemonicParsing="false" onAction="#teste2" text="Button" />
    </children>
 </AnchorPane>
