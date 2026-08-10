@@ -80,7 +80,7 @@ public class ControladorTelaPrincipal implements Initializable {
   private ConjuntoPontos eixoZ;
   private ConjuntoPontos plano;
   private ConjuntoPontos sphere;
-  private ArrayList<Ponto3D> reta;
+  private ConjuntoPontos reta;
   private double offsetX;
   private double offsetY;
   private double mouseX;
@@ -115,15 +115,15 @@ public class ControladorTelaPrincipal implements Initializable {
     anguloRotacaoX = 0;
     anguloRotacaoY = 0;
     anguloRotacaoZ = 0;
-
-    SpinnerValueFactory<Double> valueFactoryX = new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 300, 0);
-    SpinnerValueFactory<Double> valueFactoryY = new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 300, 0);
-    SpinnerValueFactory<Double> valueFactoryZ = new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 300, 0);
+    
+    SpinnerValueFactory<Double> valueFactoryX = new SpinnerValueFactory.DoubleSpinnerValueFactory(-85, 85, 0);
+    SpinnerValueFactory<Double> valueFactoryY = new SpinnerValueFactory.DoubleSpinnerValueFactory(-85, 85, 0);
+    SpinnerValueFactory<Double> valueFactoryZ = new SpinnerValueFactory.DoubleSpinnerValueFactory(-85, 85, 0);
 
     spinnerX.setValueFactory(valueFactoryX);
     spinnerY.setValueFactory(valueFactoryY);
     spinnerZ.setValueFactory(valueFactoryZ);
-
+    
     canvas.setOnMousePressed(event -> {
       mouseX = event.getX();
       mouseY = event.getY();
@@ -136,9 +136,9 @@ public class ControladorTelaPrincipal implements Initializable {
 
       double sensibilidade = 0.01;
 
-      anguloRotacaoX -= deltaX * sensibilidade;
+      anguloRotacaoX += deltaX * sensibilidade;
 
-      anguloRotacaoY -= deltaY * sensibilidade;
+      anguloRotacaoY += deltaY * sensibilidade;
 
       mouseX = event.getX();
       mouseY = event.getY();
@@ -157,7 +157,8 @@ public class ControladorTelaPrincipal implements Initializable {
 
   @FXML
   public void teste2(ActionEvent e) {
-    //reta.addAll(DesenharFormas.drawLine(new Ponto3D(0, 0, 0), new Ponto3D(spinnerX.getValue() * 100, spinnerY.getValue() * 100, spinnerZ.getValue() * 100)));
+    reta = new ConjuntoPontos(DesenharFormas.reta(new Ponto3D(spinnerX.getValue(), spinnerY.getValue() , spinnerZ.getValue()), 50));
+   // reta.setPonto(addAll(DesenharFormas.drawLine(new Ponto3D(0, 0, 0), new Ponto3D(spinnerX.getValue() * 100, spinnerY.getValue() * 100, spinnerZ.getValue() * 100)));
     sphere = new ConjuntoPontos(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0), 25)); 
     // objeto.addAll(DesenharFormas.reta(new Ponto3D(1.0,
     // 1.0, 1.0), 100.0));
@@ -180,14 +181,14 @@ public class ControladorTelaPrincipal implements Initializable {
         renderPoints(eixoZ, Color.GREEN);
         renderPoints(plano, Color.PINK);
         renderPoints(sphere, Color.BLACK);
-        //renderPoints(reta, Color.PURPLE);
+        renderPoints(reta, Color.PURPLE);
       }
     }.start();
   }
 
   private void renderPoints(ConjuntoPontos lista, Color cor) {
        ArrayList<Ponto3D> p = (lista != null) ? lista.getPonto() : null;
-       System.out.println(lista);
+      
       if(lista != null) {
          for (Ponto3D ponto3D : p) {
             Ponto2D ponto2D = camera.projecaoPerspectiva(ponto3D, 0, 0);
@@ -214,8 +215,11 @@ public class ControladorTelaPrincipal implements Initializable {
       System.out.println("deu pau");
       return;
     }
-
-    sphere.setPonto(Rotacao.rotacionarTornoReta(sphere.getPontoInicial(), new Ponto3D(spinnerX.getValue(), spinnerY.getValue(), spinnerZ.getValue()), anguloRotacaoX));
+    double x = spinnerX.getValue();
+    double y = spinnerY.getValue();
+    double z = spinnerZ.getValue();
+    Ponto3D ponto = Rotacao.angulosDeEuler(new Ponto3D(x,y,z), anguloRotacaoX, anguloRotacaoY, anguloRotacaoZ); 
+    sphere.setPonto(Rotacao.rotacionarUsandoQuaternios(sphere.getPontoInicial(), ponto, sliderRotacao.getValue()));
 
     // objeto = Rotacao.angulosDeEulerReta(new Ponto3D(100, 100, 100),
     // anguloRotacaoX,
@@ -224,12 +228,13 @@ public class ControladorTelaPrincipal implements Initializable {
   }
 
   private void rotacionarGeral() {
-
+   
     eixoX.setPonto(Rotacao.angulosDeEuler(eixoX.getPontoInicial(), anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
     eixoY.setPonto(Rotacao.angulosDeEuler(eixoY.getPontoInicial(), anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
     eixoZ.setPonto(Rotacao.angulosDeEuler(eixoZ.getPontoInicial(), anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
     plano.setPonto(Rotacao.angulosDeEuler(plano.getPontoInicial(), anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
-    sphere.setPonto(Rotacao.angulosDeEuler(sphere.getPontoInicial(), anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
+    if(sphere != null) sphere.setPonto(Rotacao.angulosDeEuler(sphere.getPontoInicial(), anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
+    if(reta != null) reta.setPonto(Rotacao.angulosDeEuler(reta.getPontoInicial(), anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue())); 
     /*
      * eixoX = Rotacao.rotacionarUsandoQuaternios(eixoXInicial,
      * new Ponto3D(spinnerX.getValue(), spinnerY.getValue(), spinnerZ.getValue()),
