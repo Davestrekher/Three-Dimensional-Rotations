@@ -68,12 +68,30 @@ public class ControladorTelaPrincipal implements Initializable {
   private Slider sliderRotacao;
   @FXML
   private ChoiceBox<String> cbEixo;
+  // @FXMLprivate ChoiceBox<String> cbProjecao;
   @FXML
-  private Spinner<Double> spinnerX;
+  private ChoiceBox<String> cbRotacao;
   @FXML
-  private Spinner<Double> spinnerY;
+  private ChoiceBox<String> cbObjeto;
   @FXML
-  private Spinner<Double> spinnerZ;
+  private TextField tfPosicaoObjetoX;
+  @FXML
+  private TextField tfPosicaoObjetoY;
+  @FXML
+  private TextField tfPosicaoObjetoZ;
+  @FXML
+  private TextField tfTamanhoObjeto;
+  @FXML
+  private TextField tfPosicaoRetaX;
+  @FXML
+  private TextField tfPosicaoRetaY;
+  @FXML
+  private TextField tfPosicaoRetaZ;
+  @FXML
+  private TextField tfTamanhoReta;
+  @FXML
+  private CheckBox checkRotacionar;
+
   private GraphicsContext graphics;
   private ConjuntoPontos eixoX;
   private ConjuntoPontos eixoY;
@@ -90,11 +108,18 @@ public class ControladorTelaPrincipal implements Initializable {
   private double anguloRotacaoX;
   private double anguloRotacaoY;
   private double anguloRotacaoZ;
-  
+
+  private double anguloRotacaoObjetoX;
+  private double anguloRotacaoObjetoY;
+  private double anguloRotacaoObjetoZ;
+
+  private final int ESFERA = 0;
+  private final int PLANO = 1;
+
   public ControladorTelaPrincipal() {
-         conjuntoPontos = new ArrayList<ConjuntoPontos>();
-  } 
-  
+    conjuntoPontos = new ArrayList<ConjuntoPontos>();
+  }
+
   @Override
   public void initialize(URL url, ResourceBundle resource) {
     graphics = canvas.getGraphicsContext2D();
@@ -115,15 +140,22 @@ public class ControladorTelaPrincipal implements Initializable {
     anguloRotacaoX = 0;
     anguloRotacaoY = 0;
     anguloRotacaoZ = 0;
-    
-    SpinnerValueFactory<Double> valueFactoryX = new SpinnerValueFactory.DoubleSpinnerValueFactory(-85, 85, 0);
-    SpinnerValueFactory<Double> valueFactoryY = new SpinnerValueFactory.DoubleSpinnerValueFactory(-85, 85, 0);
-    SpinnerValueFactory<Double> valueFactoryZ = new SpinnerValueFactory.DoubleSpinnerValueFactory(-85, 85, 0);
 
-    spinnerX.setValueFactory(valueFactoryX);
-    spinnerY.setValueFactory(valueFactoryY);
-    spinnerZ.setValueFactory(valueFactoryZ);
-    
+    anguloRotacaoObjetoX = 0;
+    anguloRotacaoObjetoY = 0;
+    anguloRotacaoObjetoZ = 0;
+
+    estabelecerTextFields();
+
+    estabelerChoiceBox();
+
+    checkRotacionar.selectedProperty().addListener((observable, antigo, marcado) -> {
+
+      cbEixo.setDisable(marcado);
+      cbEixo.setOpacity(marcado ? 0.5 : 1.0);
+
+    });
+
     canvas.setOnMousePressed(event -> {
       mouseX = event.getX();
       mouseY = event.getY();
@@ -136,34 +168,79 @@ public class ControladorTelaPrincipal implements Initializable {
 
       double sensibilidade = 0.01;
 
-      anguloRotacaoX += deltaX * sensibilidade;
+      anguloRotacaoY += deltaX * sensibilidade;
 
-      anguloRotacaoY += deltaY * sensibilidade;
+      anguloRotacaoX += deltaY * sensibilidade;
 
       mouseX = event.getX();
       mouseY = event.getY();
 
-      rotacionarGeral();
+      // rotacionarGeral();
     });
 
   }
 
   @FXML
-  public void teste(ActionEvent e) {
+  public void desenharEixos(ActionEvent e) {
     adicionarEixo();
     adicionarPlano();
     render();
   }
 
   @FXML
-  public void teste2(ActionEvent e) {
-   // reta = new ConjuntoPontos(DesenharFormas.reta(new Ponto3D(spinnerX.getValue(), spinnerY.getValue() , spinnerZ.getValue()), 50));
-   // reta.setPonto(addAll(DesenharFormas.drawLine(new Ponto3D(0, 0, 0), new Ponto3D(spinnerX.getValue() * 100, spinnerY.getValue() * 100, spinnerZ.getValue() * 100)));
-    sphere = new ConjuntoPontos(DesenharFormas.desenharEsfera(new Ponto3D(0, 0, 0), 25)); 
-    // objeto.addAll(DesenharFormas.reta(new Ponto3D(1.0,
-    // 1.0, 1.0), 100.0));
-    // objetoInicial.addAll(DesenharFormas.reta(new Ponto3D(1.0,
-    // 1.0, 1.0), 100.0));
+  public void desenharObjeto(ActionEvent e) {
+
+    switch (cbObjeto.getSelectionModel().getSelectedIndex()) {
+      case ESFERA:
+        double x = getValorTf(tfPosicaoObjetoX);
+        double y = getValorTf(tfPosicaoObjetoY);
+        double z = getValorTf(tfPosicaoObjetoZ);
+        double raio = getValorTf(tfTamanhoObjeto);
+        sphere = new ConjuntoPontos(DesenharFormas.desenharEsfera(new Ponto3D(x, y, z), raio));
+        break;
+      case PLANO:
+
+        break;
+
+      default:
+        break;
+    }
+    // reta = new ConjuntoPontos(DesenharFormas.reta(new
+    // Ponto3D(spinnerX.getValue(), spinnerY.getValue() , spinnerZ.getValue()),
+    // 50));
+  }
+
+  @FXML
+  public void apagarObjeto(ActionEvent e) {
+    switch (cbObjeto.getSelectionModel().getSelectedIndex()) {
+      case ESFERA:
+        sphere = null;
+        break;
+      case PLANO:
+
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  @FXML
+  public void desenharReta(ActionEvent e) {
+    double x1 = -getValorTf(tfPosicaoRetaX) * getValorTf(tfTamanhoReta);
+    double y1 = -getValorTf(tfPosicaoRetaY) * getValorTf(tfTamanhoReta);
+    double z1 = -getValorTf(tfPosicaoRetaZ) * getValorTf(tfTamanhoReta);
+
+    double x2 = getValorTf(tfPosicaoRetaX) * getValorTf(tfTamanhoReta);
+    double y2 = getValorTf(tfPosicaoRetaY) * getValorTf(tfTamanhoReta);
+    double z2 = getValorTf(tfPosicaoRetaZ) * getValorTf(tfTamanhoReta);
+
+    reta = new ConjuntoPontos(DesenharFormas.drawLine(new Ponto3D(x1, y1, z1), new Ponto3D(x2, y2, z2)));
+  }
+
+  @FXML
+  public void apagarReta(ActionEvent e) {
+    reta = null;
   }
 
   private void drawPoint(Ponto2D ponto, double tamanho, Color cor) {
@@ -187,53 +264,80 @@ public class ControladorTelaPrincipal implements Initializable {
   }
 
   private void renderPoints(ConjuntoPontos lista, Color cor) {
-       ArrayList<Ponto3D> p = (lista != null) ? lista.getPonto() : null;
-      
-      if(lista != null) {
-         for (Ponto3D ponto3D : p) {
-            Ponto2D ponto2D = camera.projecaoPerspectiva(ponto3D, anguloRotacaoY, anguloRotacaoX);
-            drawPoint(ponto2D, 2, cor);
-         }
+    ArrayList<Ponto3D> p = (lista != null) ? lista.getPonto() : null;
+
+    if (lista != null) {
+      for (Ponto3D ponto3D : p) {
+        Ponto2D ponto2D = camera.projecaoPerspectiva(ponto3D, anguloRotacaoY, anguloRotacaoX);
+        drawPoint(ponto2D, 2, cor);
       }
+    }
   }
 
   private void rotacionarObjeto(double angulo, int eixo) {
-    /**switch (eixo) {
+
+    switch (cbRotacao.getSelectionModel().getSelectedIndex()) {
+      default:
+        break;
+    }
+    /**
+     * switch (eixo) {
+     * case 0:
+     * anguloRotacaoX = angulo;
+     * break;
+     * case 1:
+     * anguloRotacaoY = angulo;
+     * break;
+     * case 2:
+     * anguloRotacaoZ = angulo;
+     * break;
+     * default:
+     * anguloRotacaoX = angulo;/
+     * }
+     **/
+
+    switch (eixo) {
       case 0:
-        anguloRotacaoX = angulo;
+        anguloRotacaoObjetoX = angulo;
         break;
       case 1:
-        anguloRotacaoY = angulo;
+        anguloRotacaoObjetoY = angulo;
         break;
       case 2:
-        anguloRotacaoZ = angulo;
+        anguloRotacaoObjetoZ = angulo;
         break;
       default:
-        anguloRotacaoX = angulo;/
-    }**/
-    if (spinnerX.getValue() == null || spinnerY.getValue() == null || spinnerZ.getValue() == null) {
-      System.out.println("deu pau");
-      return;
+        break;
     }
-    double x = spinnerX.getValue();
-    double y = spinnerY.getValue();
-    double z = spinnerZ.getValue();
-    if(x != 0 || y != 0 || z !=0) sphere.setPonto(Rotacao.rotacionarTornoReta(sphere.getPontoInicial(), new Ponto3D(x,y,z), sliderRotacao.getValue()));
+
+    double x = getValorTf(tfPosicaoRetaX);
+    double y = getValorTf(tfPosicaoRetaY);
+    double z = getValorTf(tfPosicaoRetaZ);
+    if (x != 0 || y != 0 || z != 0)
+      // sphere.setPonto(
+      // Rotacao.rotacionarTornoReta(sphere.getPontoInicial(), new Ponto3D(x, y, z),
+      // sliderRotacao.getValue()));
+      reta.setPonto(Rotacao.angulosDeEuler(reta.getPontoInicial(), anguloRotacaoObjetoX, anguloRotacaoObjetoY,
+          anguloRotacaoObjetoZ));
 
   }
 
-
-  
-
   private void rotacionarGeral() {
-   /*
-    * eixoX.setPonto(Rotacao.angulosDeEuler(eixoX.getPontoInicial(), anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
-    * eixoY.setPonto(Rotacao.angulosDeEuler(eixoY.getPontoInicial(), anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
-    * eixoZ.setPonto(Rotacao.angulosDeEuler(eixoZ.getPontoInicial(), anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
-    * plano.setPonto(Rotacao.angulosDeEuler(plano.getPontoInicial(), anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
-    * if(sphere != null) sphere.setPonto(Rotacao.angulosDeEuler(sphere.getPontoInicial(), anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
-    * if(reta != null) reta.setPonto(Rotacao.angulosDeEuler(reta.getPontoInicial(), anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue())); 
-    */
+    /*
+     * eixoX.setPonto(Rotacao.angulosDeEuler(eixoX.getPontoInicial(),
+     * anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
+     * eixoY.setPonto(Rotacao.angulosDeEuler(eixoY.getPontoInicial(),
+     * anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
+     * eixoZ.setPonto(Rotacao.angulosDeEuler(eixoZ.getPontoInicial(),
+     * anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
+     * plano.setPonto(Rotacao.angulosDeEuler(plano.getPontoInicial(),
+     * anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
+     * if(sphere != null)
+     * sphere.setPonto(Rotacao.angulosDeEuler(sphere.getPontoInicial(),
+     * anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
+     * if(reta != null) reta.setPonto(Rotacao.angulosDeEuler(reta.getPontoInicial(),
+     * anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
+     */
     /*
      * eixoX = Rotacao.rotacionarUsandoQuaternios(eixoXInicial,
      * new Ponto3D(spinnerX.getValue(), spinnerY.getValue(), spinnerZ.getValue()),
@@ -252,59 +356,93 @@ public class ControladorTelaPrincipal implements Initializable {
 
   }
 
- 
   private void adicionarEixo() {
-      eixoX = new ConjuntoPontos(DesenharFormas.drawLine(new Ponto3D(0, -85, 0), new Ponto3D(0, 85, 0)));
-      eixoY = new ConjuntoPontos(DesenharFormas.drawLine(new Ponto3D(-85, 0, 0), new Ponto3D(85, 0, 0)));
-      eixoZ = new ConjuntoPontos(DesenharFormas.drawLine(new Ponto3D(0, 0, -85), new Ponto3D(0, 0, 85)));        
+    eixoX = new ConjuntoPontos(DesenharFormas.drawLine(new Ponto3D(0, -85, 0), new Ponto3D(0, 85, 0)));
+    eixoY = new ConjuntoPontos(DesenharFormas.drawLine(new Ponto3D(-85, 0, 0), new Ponto3D(85, 0, 0)));
+    eixoZ = new ConjuntoPontos(DesenharFormas.drawLine(new Ponto3D(0, 0, -85), new Ponto3D(0, 0, 85)));
   }
-  
+
   private void adicionarPlano() {
-      plano =  new ConjuntoPontos(DesenharFormas.desenharPlanoRaso(170, 170, new Ponto3D(-85, 0, -85), 5000));
+    plano = new ConjuntoPontos(DesenharFormas.desenharPlanoRaso(170, 170, new Ponto3D(-85, 0, -85), 5000));
   }
 
   private void estabelecerSlider() {
+    sliderRotacao.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
+
+      rotacionarObjeto(sliderRotacao.getValue(), cbEixo.getSelectionModel().getSelectedIndex());
+    });
+
+    sliderHorizontal.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
+
+      anguloRotacaoY = sliderHorizontal.getValue();
+      rotacionarGeral();
+    });
+
+    sliderVertical.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
+
+      anguloRotacaoX = sliderVertical.getValue();
+      rotacionarGeral();
+    });
+
+    sliderProfundidade.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
+
+      anguloRotacaoZ = sliderVertical.getValue();
+      rotacionarGeral();
+    });
+  }
+
+  private void estabelerChoiceBox() {
     cbEixo.setItems(FXCollections.observableArrayList("X", "Y", "Z"));
     cbEixo.setValue("X");
     cbEixo.getSelectionModel().selectedIndexProperty().addListener((obs, indiceAntigo, indiceNovo) -> {
       sliderRotacao.setValue(selecionarEixo((int) indiceNovo));
     });
 
-    sliderRotacao.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
-    
-      rotacionarObjeto(sliderRotacao.getValue(), cbEixo.getSelectionModel().getSelectedIndex());
-    });
+    // cbProjecao.setItems(FXCollections.observableArrayList("Projecao perspectiva",
+    // "Projecao ortografica"));
+    // cbProjecao.setValue("Projecao perspectiva");
 
-    sliderHorizontal.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
-     
-      anguloRotacaoY = sliderHorizontal.getValue();
-      rotacionarGeral();
-    });
+    cbRotacao.setItems(FXCollections.observableArrayList("Angulos de Euler", "Quaternios"));
+    cbRotacao.setValue("Angulos de Euler");
 
-    sliderVertical.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
-     
-      anguloRotacaoX = sliderVertical.getValue();
-      rotacionarGeral();
-    });
+    cbObjeto.setItems(FXCollections.observableArrayList("Esfera", "Plano"));
+    cbObjeto.setValue("Esfera");
 
-    sliderProfundidade.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
-      
-      anguloRotacaoZ = sliderVertical.getValue();
-      rotacionarGeral();
-    });
   }
- 
+
+  private void estabelecerTextFields() {
+    tfPosicaoObjetoX.setText("0");
+    tfPosicaoObjetoY.setText("0");
+    tfPosicaoObjetoZ.setText("0");
+    tfTamanhoObjeto.setText("25");
+
+    tfPosicaoRetaX.setText("0");
+    tfPosicaoRetaY.setText("0");
+    tfPosicaoRetaZ.setText("0");
+    tfTamanhoReta.setText("0");
+  }
+
   private double selecionarEixo(int eixo) {
     switch (eixo) {
       case 0:
-        return anguloRotacaoX;
+        return anguloRotacaoObjetoX;
       case 1:
-        return anguloRotacaoY;
+        return anguloRotacaoObjetoY;
       case 2:
-        return anguloRotacaoZ;
+        return anguloRotacaoObjetoZ;
       default:
-        return anguloRotacaoX;
+        return anguloRotacaoObjetoX;
     }
   }
 
+  private double getValorTf(TextField tf) {
+    double valor = 0;
+    try {
+      valor = Double.parseDouble(tf.getText());
+    } catch (NumberFormatException | NullPointerException e) {
+      // Usuário ainda está digitando um valor incompleto
+      System.out.println("Digite um numero valido.");
+    }
+    return valor;
+  }
 }

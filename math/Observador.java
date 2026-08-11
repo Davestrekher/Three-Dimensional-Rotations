@@ -73,6 +73,13 @@ public class Observador {
     return new Ponto2D(x, y);
   }
 
+  public Ponto2D projecaoPerspectivaQuaternios(Ponto3D ponto, double anguloHorizontal, double anguloVertical,
+      double anguloEmTornoDoEixo) {
+    Quaternio q = new Quaternio(Math.cos(anguloHorizontal / 2.0), 0, Math.sin(anguloVertical / 2.0), 0);
+
+    return new Ponto2D(x, y);
+  }
+
   private double[][] multiplicarMatrizes(double[][] X, double[][] Y) {
     double[][] res = new double[X.length][Y[0].length];
     for (int i = 0; i < X.length; i++) {
