@@ -112,7 +112,6 @@
 
 
 
-/* Entrar em grupo */
 
 .botao-entrar {
 
@@ -131,9 +130,22 @@
   -fx-background-color: #286294;
 }
 
+.botao-benchmark {
+
+  -fx-background-color: #2b1c1c;
+}
 
 
-/* Sair do grupo */
+.botao-benchmark:hover {
+
+  -fx-background-color: #9d9d9d;
+}
+
+
+.botao-benchmark:pressed {
+
+  -fx-background-color: #080808;
+}
 
 .botao-sair {
 

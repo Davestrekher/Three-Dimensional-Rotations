@@ -35,4 +35,19 @@ public class OperacaoQuaternios {
   private static double calculaModulo(Quaternio q) {
     return Math.sqrt(q.getA() * q.getA() + q.getI() * q.getI() + q.getJ() * q.getJ() + q.getK() * q.getK());
   }
+
+  public static Quaternio normalizarQuaternion(Quaternio q) {
+
+    double norma = Math.sqrt(
+        q.getA() * q.getA() +
+            q.getI() * q.getI() +
+            q.getJ() * q.getJ() +
+            q.getK() * q.getK());
+
+    return new Quaternio(
+        q.getA() / norma,
+        q.getI() / norma,
+        q.getJ() / norma,
+        q.getK() / norma);
+  }
 }

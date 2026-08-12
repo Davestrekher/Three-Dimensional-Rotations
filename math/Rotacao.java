@@ -34,7 +34,7 @@ public class Rotacao {
 
     return novosPontos;
   }
-  
+
   public static Ponto3D angulosDeEuler(Ponto3D pontos, double anguloX, double anguloY,
       double anguloZ) {
     double[][] matrixX = { { 1, 0, 0 },
@@ -59,16 +59,7 @@ public class Rotacao {
     double y = matrixFinal[1][0];
     double z = matrixFinal[2][0];
 
-    return new Ponto3D(x,y,z);
-  }
-  
-  public static ArrayList<Ponto3D> angulosDeEulerReta(Ponto3D reta, double angulo, ArrayList<Ponto3D> pontos) {
-    double X = reta.getX();
-    double Y = reta.getY();
-    double Z = reta.getZ();
-    double anguloTeta = Math.atan(Y / Z);
-    double anguloFi = Math.atan(Y / Math.sqrt(Z * Z + X * X));
-    return angulosDeEuler(pontos, anguloFi, anguloTeta, angulo);
+    return new Ponto3D(x, y, z);
   }
 
   public static ArrayList<Ponto3D> rotacionarTornoReta(ArrayList<Ponto3D> pontos, Ponto3D vetorDiretor, double angulo) {
@@ -223,7 +214,6 @@ public class Rotacao {
 
   public static ArrayList<Ponto3D> rotacionarUsandoQuaternios(ArrayList<Ponto3D> pontos, Ponto3D vetorDiretor,
       double angulo) {
-
     Ponto3D vetorNormalizado = normalizarVetor(vetorDiretor);
 
     double cosseno = Math.cos(angulo / 2);

@@ -81,14 +81,14 @@ public class ControladorTelaPrincipal implements Initializable {
   private TextField tfPosicaoObjetoZ;
   @FXML
   private TextField tfTamanhoObjeto;
+
   @FXML
-  private TextField tfPosicaoRetaX;
+  Spinner<Double> spinnerX;
   @FXML
-  private TextField tfPosicaoRetaY;
+  Spinner<Double> spinnerY;
   @FXML
-  private TextField tfPosicaoRetaZ;
-  @FXML
-  private TextField tfTamanhoReta;
+  Spinner<Double> spinnerZ;
+
   @FXML
   private CheckBox checkRotacionar;
 
@@ -113,8 +113,22 @@ public class ControladorTelaPrincipal implements Initializable {
   private double anguloRotacaoObjetoY;
   private double anguloRotacaoObjetoZ;
 
+  private Quaternio orientacao;
+  private double delta;
+
+  private int eixoAnterior;
+  private ArrayList<Ponto3D> sphereAtual;
+
   private final int ESFERA = 0;
   private final int PLANO = 1;
+  private final int RETA = 2;
+
+  private final int EULER = 0;
+  private final int QUATERNIOS = 1;
+
+  private final int EIXO_X = 0;
+  private final int EIXO_Y = 1;
+  private final int EIXO_Z = 2;
 
   public ControladorTelaPrincipal() {
     conjuntoPontos = new ArrayList<ConjuntoPontos>();
@@ -141,13 +155,19 @@ public class ControladorTelaPrincipal implements Initializable {
     anguloRotacaoY = 0;
     anguloRotacaoZ = 0;
 
+    eixoAnterior = 0;
+
     anguloRotacaoObjetoX = 0;
     anguloRotacaoObjetoY = 0;
     anguloRotacaoObjetoZ = 0;
 
+    orientacao = new Quaternio(1, 0, 0, 0);
+
     estabelecerTextFields();
 
     estabelerChoiceBox();
+
+    estabelecerSpinners();
 
     checkRotacionar.selectedProperty().addListener((observable, antigo, marcado) -> {
 
@@ -197,11 +217,23 @@ public class ControladorTelaPrincipal implements Initializable {
         double z = getValorTf(tfPosicaoObjetoZ);
         double raio = getValorTf(tfTamanhoObjeto);
         sphere = new ConjuntoPontos(DesenharFormas.desenharEsfera(new Ponto3D(x, y, z), raio));
+        sphereAtual = new ArrayList<>(sphere.getPontoInicial());
         break;
       case PLANO:
 
         break;
+      case RETA:
+        double x1 = -getValorTf(tfPosicaoObjetoX) * getValorTf(tfTamanhoObjeto);
+        double y1 = -getValorTf(tfPosicaoObjetoY) * getValorTf(tfTamanhoObjeto);
+        double z1 = -getValorTf(tfPosicaoObjetoZ) * getValorTf(tfTamanhoObjeto);
 
+        double x2 = getValorTf(tfPosicaoObjetoX) * getValorTf(tfTamanhoObjeto);
+        double y2 = getValorTf(tfPosicaoObjetoY) * getValorTf(tfTamanhoObjeto);
+        double z2 = getValorTf(tfPosicaoObjetoZ) * getValorTf(tfTamanhoObjeto);
+
+        reta = new ConjuntoPontos(DesenharFormas.drawLine(new Ponto3D(x1, y1, z1), new Ponto3D(x2, y2, z2)));
+        reta.setVetorInicial(new Ponto3D(x2, y2, z2));
+        break;
       default:
         break;
     }
@@ -219,28 +251,78 @@ public class ControladorTelaPrincipal implements Initializable {
       case PLANO:
 
         break;
-
+      case RETA:
+        reta = null;
+        break;
       default:
         break;
     }
   }
 
   @FXML
-  public void desenharReta(ActionEvent e) {
-    double x1 = -getValorTf(tfPosicaoRetaX) * getValorTf(tfTamanhoReta);
-    double y1 = -getValorTf(tfPosicaoRetaY) * getValorTf(tfTamanhoReta);
-    double z1 = -getValorTf(tfPosicaoRetaZ) * getValorTf(tfTamanhoReta);
-
-    double x2 = getValorTf(tfPosicaoRetaX) * getValorTf(tfTamanhoReta);
-    double y2 = getValorTf(tfPosicaoRetaY) * getValorTf(tfTamanhoReta);
-    double z2 = getValorTf(tfPosicaoRetaZ) * getValorTf(tfTamanhoReta);
-
-    reta = new ConjuntoPontos(DesenharFormas.drawLine(new Ponto3D(x1, y1, z1), new Ponto3D(x2, y2, z2)));
+  public void benchmark() {
+    new Thread(() -> {
+      benchmarkGeral();
+    }).start();
   }
 
-  @FXML
-  public void apagarReta(ActionEvent e) {
-    reta = null;
+  private void benchmarkGeral() {
+    System.out.println("Iniciando teste de perfomance");
+    System.out.println("Quaternios x Angulos de Euler x Matriz de mudanca de base");
+    System.out.println("Número de repeticoes: 10000");
+    ConjuntoPontos planoTeste = new ConjuntoPontos(plano.getPontoInicial());
+
+    int repeticoes = 10000;
+    long inicio = System.currentTimeMillis();
+
+    for (int i = 0; i < repeticoes; i++) {
+      Rotacao.angulosDeEuler(
+          planoTeste.getPontoInicial(),
+          anguloRotacaoObjetoX,
+          anguloRotacaoObjetoY,
+          anguloRotacaoObjetoZ);
+    }
+
+    long fim = System.currentTimeMillis();
+
+    double tempoMedioEuler = (fim - inicio) / (double) repeticoes;
+
+    ConjuntoPontos planoTeste2 = new ConjuntoPontos(plano.getPontoInicial());
+    inicio = System.currentTimeMillis();
+
+    for (int i = 0; i < repeticoes; i++) {
+      planoTeste2.setPonto(Rotacao.rotacionarUsandoQuaternios(planoTeste2.getPontoInicial(), new Ponto3D(1, 0, 0),
+          sliderRotacao.getValue()));
+      planoTeste2.setPonto(
+          Rotacao.rotacionarUsandoQuaternios(planoTeste2.getPonto(), new Ponto3D(0, 1, 0), sliderRotacao.getValue()));
+      planoTeste2.setPonto(Rotacao.rotacionarUsandoQuaternios(planoTeste2.getPontoInicial(), new Ponto3D(0, 0, 1),
+          sliderRotacao.getValue()));
+    }
+
+    fim = System.currentTimeMillis();
+
+    double tempoMedioQuaternios = (fim - inicio) / (double) repeticoes;
+
+    ConjuntoPontos planoTeste3 = new ConjuntoPontos(plano.getPontoInicial());
+    inicio = System.currentTimeMillis();
+
+    for (int i = 0; i < repeticoes; i++) {
+      planoTeste3.setPonto(Rotacao.rotacionarTornoReta(planoTeste3.getPontoInicial(), new Ponto3D(1, 0, 0),
+          sliderRotacao.getValue()));
+      planoTeste3.setPonto(
+          Rotacao.rotacionarTornoReta(planoTeste3.getPonto(), new Ponto3D(0, 1, 0), sliderRotacao.getValue()));
+      planoTeste3.setPonto(Rotacao.rotacionarTornoReta(planoTeste3.getPontoInicial(), new Ponto3D(0, 0, 1),
+          sliderRotacao.getValue()));
+    }
+
+    fim = System.currentTimeMillis();
+
+    double tempoMedioMudancaDeBase = (fim - inicio) / (double) repeticoes;
+
+    System.out.println("Tempo de execução em média:");
+    System.out.println("Angulos de euler:" + tempoMedioEuler + " ms");
+    System.out.println("Quaternios:" + tempoMedioQuaternios + " ms");
+    System.out.println("Matriz de mudanca de base:" + tempoMedioMudancaDeBase + " ms");
   }
 
   private void drawPoint(Ponto2D ponto, double tamanho, Color cor) {
@@ -276,84 +358,125 @@ public class ControladorTelaPrincipal implements Initializable {
 
   private void rotacionarObjeto(double angulo, int eixo) {
 
-    switch (cbRotacao.getSelectionModel().getSelectedIndex()) {
-      default:
-        break;
-    }
-    /**
-     * switch (eixo) {
-     * case 0:
-     * anguloRotacaoX = angulo;
-     * break;
-     * case 1:
-     * anguloRotacaoY = angulo;
-     * break;
-     * case 2:
-     * anguloRotacaoZ = angulo;
-     * break;
-     * default:
-     * anguloRotacaoX = angulo;/
-     * }
-     **/
-
     switch (eixo) {
-      case 0:
+      case EIXO_X:
         anguloRotacaoObjetoX = angulo;
         break;
-      case 1:
+      case EIXO_Y:
         anguloRotacaoObjetoY = angulo;
         break;
-      case 2:
+      case EIXO_Z:
         anguloRotacaoObjetoZ = angulo;
         break;
       default:
         break;
     }
 
-    double x = getValorTf(tfPosicaoRetaX);
-    double y = getValorTf(tfPosicaoRetaY);
-    double z = getValorTf(tfPosicaoRetaZ);
-    if (x != 0 || y != 0 || z != 0)
-      // sphere.setPonto(
-      // Rotacao.rotacionarTornoReta(sphere.getPontoInicial(), new Ponto3D(x, y, z),
-      // sliderRotacao.getValue()));
-      reta.setPonto(Rotacao.angulosDeEuler(reta.getPontoInicial(), anguloRotacaoObjetoX, anguloRotacaoObjetoY,
-          anguloRotacaoObjetoZ));
+    switch (cbRotacao.getSelectionModel().getSelectedIndex()) {
+      case EULER:
+        rotacionarPorEuler(angulo, eixo);
+        break;
+      case QUATERNIOS:
+        rotacionarPorQuaternios(angulo, eixo);
+        break;
 
+      default:
+        break;
+    }
   }
 
-  private void rotacionarGeral() {
-    /*
-     * eixoX.setPonto(Rotacao.angulosDeEuler(eixoX.getPontoInicial(),
-     * anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
-     * eixoY.setPonto(Rotacao.angulosDeEuler(eixoY.getPontoInicial(),
-     * anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
-     * eixoZ.setPonto(Rotacao.angulosDeEuler(eixoZ.getPontoInicial(),
-     * anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
-     * plano.setPonto(Rotacao.angulosDeEuler(plano.getPontoInicial(),
-     * anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
-     * if(sphere != null)
-     * sphere.setPonto(Rotacao.angulosDeEuler(sphere.getPontoInicial(),
-     * anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
-     * if(reta != null) reta.setPonto(Rotacao.angulosDeEuler(reta.getPontoInicial(),
-     * anguloRotacaoY, anguloRotacaoX, sliderProfundidade.getValue()));
-     */
-    /*
-     * eixoX = Rotacao.rotacionarUsandoQuaternios(eixoXInicial,
-     * new Ponto3D(spinnerX.getValue(), spinnerY.getValue(), spinnerZ.getValue()),
-     * sliderRotacao.getValue());
-     * eixoY = Rotacao.rotacionarUsandoQuaternios(eixoYInicial,
-     * new Ponto3D(spinnerX.getValue(), spinnerY.getValue(), spinnerZ.getValue()),
-     * sliderRotacao.getValue());
-     * eixoZ = Rotacao.rotacionarUsandoQuaternios(eixoZInicial,
-     * new Ponto3D(spinnerX.getValue(), spinnerY.getValue(), spinnerZ.getValue()),
-     * sliderRotacao.getValue());
-     */
+  private void rotacionarPorEuler(double angulo, int eixo) {
+    if (!checkRotacionar.isSelected()) {
+      sphere.setPonto(
+          Rotacao.angulosDeEuler(sphere.getPontoInicial(), anguloRotacaoObjetoX, anguloRotacaoObjetoY,
+              anguloRotacaoObjetoZ));
+    } else if (reta != null) {
+      Ponto3D vetor = reta.getVetorInicial();
+      double x = vetor.getX();
+      double y = vetor.getY();
+      double z = vetor.getZ();
+      if (x != 0 || y != 0 || z != 0) {
+        sphere.setPonto(
+            Rotacao.rotacionarTornoReta(sphere.getPontoInicial(), new Ponto3D(x, y, z),
+                sliderRotacao.getValue()));
+      }
+    }
+  }
 
-    // objeto = Rotacao.angulosDeEulerReta(new Ponto3D(100, 100, 100),
-    // anguloRotacaoX,
-    // objetoInicial);
+  private void rotacionarPorQuaternios(double angulo, int eixo) {
+    if (!checkRotacionar.isSelected()) {
 
+      Ponto3D vetor = new Ponto3D(spinnerX.getValue(), spinnerY.getValue(),
+          spinnerZ.getValue());
+
+      sphere.setPonto(
+          Rotacao.rotacionarUsandoQuaternios(sphere.getPontoInicial(), vetor,
+              sliderRotacao.getValue()));
+
+      /*
+       * switch (eixo) {
+       * case EIXO_X:
+       * if (eixoAnterior != eixo) {
+       * sphereAtual = new ArrayList<>(sphere.getPonto());
+       * resetEixo(eixoAnterior);
+       * eixoAnterior = eixo;
+       * }
+       * sphere.setPonto(
+       * Rotacao.rotacionarUsandoQuaternios(sphereAtual, new Ponto3D(1, 0, 0),
+       * anguloRotacaoObjetoX));
+       * break;
+       * case EIXO_Y:
+       * if (eixoAnterior != eixo) {
+       * sphereAtual = new ArrayList<>(sphere.getPonto());
+       * resetEixo(eixoAnterior);
+       * eixoAnterior = eixo;
+       * }
+       * sphere.setPonto(
+       * Rotacao.rotacionarUsandoQuaternios(sphereAtual, new Ponto3D(0, 1, 0),
+       * anguloRotacaoObjetoY));
+       * break;
+       * case EIXO_Z:
+       * if (eixoAnterior != eixo) {
+       * sphereAtual = new ArrayList<>(sphere.getPonto());
+       * resetEixo(eixoAnterior);
+       * eixoAnterior = eixo;
+       * }
+       * sphere.setPonto(
+       * Rotacao.rotacionarUsandoQuaternios(sphereAtual, new Ponto3D(0, 0, 1),
+       * anguloRotacaoObjetoZ));
+       * break;
+       * default:
+       * sphere.setPonto(
+       * Rotacao.rotacionarUsandoQuaternios(sphere.getPontoInicial(), new Ponto3D(1,
+       * 0, 0), anguloRotacaoObjetoX));
+       * break;
+       * }
+       */
+
+    } else if (reta != null)
+
+    {
+      Ponto3D vetor = reta.getVetorInicial();
+      double x = vetor.getX();
+      double y = vetor.getY();
+      double z = vetor.getZ();
+      if (x != 0 || y != 0 || z != 0) {
+
+        sphere.setPonto(
+            Rotacao.rotacionarTornoReta(sphere.getPontoInicial(), new Ponto3D(x, y, z),
+                sliderRotacao.getValue()));
+      }
+    }
+  }
+
+  private void resetEixo(int eixo) {
+    if (eixo == 0) {
+      anguloRotacaoObjetoX = 0;
+    } else if (eixo == 1) {
+      anguloRotacaoObjetoY = 0;
+    } else {
+      anguloRotacaoObjetoZ = 0;
+    }
   }
 
   private void adicionarEixo() {
@@ -368,26 +491,23 @@ public class ControladorTelaPrincipal implements Initializable {
 
   private void estabelecerSlider() {
     sliderRotacao.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
-
+      delta = valorNovo.doubleValue() - valorAntigo.doubleValue();
       rotacionarObjeto(sliderRotacao.getValue(), cbEixo.getSelectionModel().getSelectedIndex());
     });
 
     sliderHorizontal.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
 
       anguloRotacaoY = sliderHorizontal.getValue();
-      rotacionarGeral();
     });
 
     sliderVertical.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
 
       anguloRotacaoX = sliderVertical.getValue();
-      rotacionarGeral();
     });
 
     sliderProfundidade.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
 
       anguloRotacaoZ = sliderVertical.getValue();
-      rotacionarGeral();
     });
   }
 
@@ -398,14 +518,10 @@ public class ControladorTelaPrincipal implements Initializable {
       sliderRotacao.setValue(selecionarEixo((int) indiceNovo));
     });
 
-    // cbProjecao.setItems(FXCollections.observableArrayList("Projecao perspectiva",
-    // "Projecao ortografica"));
-    // cbProjecao.setValue("Projecao perspectiva");
-
     cbRotacao.setItems(FXCollections.observableArrayList("Angulos de Euler", "Quaternios"));
     cbRotacao.setValue("Angulos de Euler");
 
-    cbObjeto.setItems(FXCollections.observableArrayList("Esfera", "Plano"));
+    cbObjeto.setItems(FXCollections.observableArrayList("Esfera", "Plano", "Reta"));
     cbObjeto.setValue("Esfera");
 
   }
@@ -415,11 +531,47 @@ public class ControladorTelaPrincipal implements Initializable {
     tfPosicaoObjetoY.setText("0");
     tfPosicaoObjetoZ.setText("0");
     tfTamanhoObjeto.setText("25");
+  }
 
-    tfPosicaoRetaX.setText("0");
-    tfPosicaoRetaY.setText("0");
-    tfPosicaoRetaZ.setText("0");
-    tfTamanhoReta.setText("0");
+  private void estabelecerSpinners() {
+    SpinnerValueFactory.DoubleSpinnerValueFactory factoryX = new SpinnerValueFactory.DoubleSpinnerValueFactory(
+        -1, // mínimo
+        1, // máximo
+        0, // valor inicial
+        0.1 // incremento
+    );
+
+    spinnerX.setValueFactory(factoryX);
+
+    SpinnerValueFactory.DoubleSpinnerValueFactory factoryY = new SpinnerValueFactory.DoubleSpinnerValueFactory(
+        -1, // mínimo
+        1, // máximo
+        0, // valor inicial
+        0.1 // incremento
+    );
+
+    spinnerY.setValueFactory(factoryY);
+
+    SpinnerValueFactory.DoubleSpinnerValueFactory factoryZ = new SpinnerValueFactory.DoubleSpinnerValueFactory(
+        -1, // mínimo
+        1, // máximo
+        0, // valor inicial
+        0.1 // incremento
+    );
+
+    spinnerZ.setValueFactory(factoryZ);
+
+    spinnerX.valueProperty().addListener((obs, antigo, novo) -> {
+      rotacionarObjeto(novo, EIXO_X);
+    });
+
+    spinnerY.valueProperty().addListener((obs, antigo, novo) -> {
+      rotacionarObjeto(novo, EIXO_Y);
+    });
+
+    spinnerZ.valueProperty().addListener((obs, antigo, novo) -> {
+      rotacionarObjeto(novo, EIXO_Z);
+    });
   }
 
   private double selecionarEixo(int eixo) {
