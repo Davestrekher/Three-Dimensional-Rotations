@@ -1,15 +1,23 @@
+/* 
+  Classe que representa a camera
+*/
+
 package math;
 
 public class Observador {
 
+  //Posicao da camera no espaco
   private double x;
   private double y;
   private double z;
 
+  //Altura do canvas
   private double altura;
 
+  //Foco da camera
   private double focus;
 
+  //Campo de visao da camera
   private double fov;
 
   public Observador(double altura, double fov) {
@@ -19,11 +27,19 @@ public class Observador {
 
     this.fov = fov;
     this.altura = altura;
+    //O foco eh definido atraves de uma relacao da altura do canvas e do campo de visao
     this.focus = (altura / 2.0) / Math.tan(fov / 2.0);
   }
 
+  //Distancia da camera (so eh utilizada na projecao ortografica)
   private final static double distance = 100;
 
+  /*
+    Projecao que ignora a coordenada z do ponto ao projeta-lo em duas dimensoes.
+    Util para projecoes mais simples, porem nao causa boa sensacao de perspectiva.
+    As matrizes existem para rotacionar os pontos renderizados em relacao a camera antes de projeta-los,
+    permitindo que o usuario altere a sua visao dos objetos no canvas
+  */
   public Ponto2D projecaoOrtografica(Ponto3D ponto3D, double anguloHorizontal, double anguloVertical) {
 
     double[][] matrixX = { { 1, 0, 0 },
@@ -33,11 +49,11 @@ public class Observador {
         { 0, 1, 0 },
         { -Math.sin(anguloHorizontal), 0, Math.cos(anguloHorizontal) } };
 
-    double[][] matrixRes = multiplicarMatrizes(matrixX, matrixY);
+    double[][] matrixRes = OperacoesMatrizes.multiplicarMatrizes(matrixX, matrixY);
 
     double[][] matrixXYZ = { { ponto3D.getX() }, { ponto3D.getY() }, { ponto3D.getZ() } };
 
-    double[][] matrixFinal = multiplicarMatrizes(matrixRes, matrixXYZ);
+    double[][] matrixFinal = OperacoesMatrizes.multiplicarMatrizes(matrixRes, matrixXYZ);
 
     double x = (matrixFinal[0][0] / distance * focus);
     double y = (matrixFinal[1][0] / distance * focus);
@@ -50,6 +66,12 @@ public class Observador {
     return new Ponto2D(x, y);
   }
 
+  /* 
+    Projecao que leva em consideracao a coordenada z dos objetos e da camera, causando uma melhor sensacao
+    de projundidade e perspectiva.
+    As matrizes existem para rotacionar os pontos renderizados em relacao a camera antes de projeta-los,
+    permitindo que o usuario altere a sua visao dos objetos no canvas
+  */
   public Ponto2D projecaoPerspectiva(Ponto3D ponto3D, double anguloHorizontal, double anguloVertical) {
 
     double[][] matrixX = { { 1, 0, 0 },
@@ -59,12 +81,16 @@ public class Observador {
         { 0, 1, 0 },
         { Math.sin(anguloHorizontal), 0, Math.cos(anguloHorizontal) } };
 
-    double[][] matrixRes = multiplicarMatrizes(matrixX, matrixY);
+    double[][] matrixRes = OperacoesMatrizes.multiplicarMatrizes(matrixX, matrixY);
 
     double[][] matrixXYZ = { { ponto3D.getX() }, { ponto3D.getY() }, { ponto3D.getZ() } };
 
-    double[][] matrixFinal = multiplicarMatrizes(matrixRes, matrixXYZ);
+    double[][] matrixFinal = OperacoesMatrizes.multiplicarMatrizes(matrixRes, matrixXYZ);
 
+    /*
+      Caso invertido (getZ() - matrixFinal[2][0]), pontos que estao longe irao se comportar
+      como se estivessem perto e vice-versa
+    */
     double z = matrixFinal[2][0] - getZ();
 
     double x = focus * matrixFinal[0][0] / z;
@@ -80,20 +106,6 @@ public class Observador {
     return new Ponto2D(x, y);
   }
 
-  private double[][] multiplicarMatrizes(double[][] X, double[][] Y) {
-    double[][] res = new double[X.length][Y[0].length];
-    for (int i = 0; i < X.length; i++) {
-      for (int j = 0; j < Y[0].length; j++) {
-        res[i][j] = 0;
-        for (int k = 0; k < X[0].length; k++) {
-          res[i][j] += X[i][k] * Y[k][j];
-        }
-      }
-    }
-
-    return res;
-  }
-
   public double getX() {
     return x;
   }
@@ -105,6 +117,11 @@ public class Observador {
   public double getZ() {
     return z;
   }
+
+  /* 
+    Os metodos abaixo sao chamados quando o usuario da zoom no canvas ao girar o scroll do mouse,
+    alterando a distancia da camera pelo eixo z
+  */
 
   public void aproximar() {
     z += 10;

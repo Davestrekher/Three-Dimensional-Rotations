@@ -1,3 +1,7 @@
+/*
+  Abstracao de um ponto tridimensional. As operacoes matematicas ocorrem utilizando pontos desta classe
+*/
+
 package math;
 
 public class Ponto3D {
