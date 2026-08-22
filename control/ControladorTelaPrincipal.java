@@ -81,7 +81,6 @@ public class ControladorTelaPrincipal implements Initializable {
   private TextField tfPosicaoObjetoZ;
   @FXML
   private TextField tfTamanhoObjeto;
-
   @FXML
   Spinner<Double> spinnerX;
   @FXML
@@ -101,18 +100,19 @@ public class ControladorTelaPrincipal implements Initializable {
   private ConjuntoPontos reta;
   private double offsetX;
   private double offsetY;
-  private double mouseX;
-  private double mouseY;
   private ArrayList<ConjuntoPontos> conjuntoPontos;
   private Observador camera;
-  private double anguloRotacaoX;
-  private double anguloRotacaoY;
-  private double anguloRotacaoZ;
+  private Double anguloRotacaoX = 0.0;
+  private Double anguloRotacaoY = 0.0;
+  private Double anguloRotacaoZ = 0.0;
 
   private double anguloRotacaoObjetoX;
   private double anguloRotacaoObjetoY;
   private double anguloRotacaoObjetoZ;
-
+  
+  private AnguloRotacao ponteiroAnguloRotacaoX;
+  private AnguloRotacao ponteiroAnguloRotacaoY;
+  
   private Quaternio orientacao;
   private double delta;
 
@@ -131,75 +131,33 @@ public class ControladorTelaPrincipal implements Initializable {
   private final int EIXO_Z = 2;
 
   public ControladorTelaPrincipal() {
+    ponteiroAnguloRotacaoX = new AnguloRotacao(0.0);
+    ponteiroAnguloRotacaoY = new AnguloRotacao(0.0);
     conjuntoPontos = new ArrayList<ConjuntoPontos>();
   }
 
   @Override
   public void initialize(URL url, ResourceBundle resource) {
-    graphics = canvas.getGraphicsContext2D();
-    offsetX = canvas.getWidth() / 2;
-    offsetY = canvas.getHeight() / 2;
-    camera = new Observador(canvas.getHeight(), Math.toRadians(40));
-    estabelecerSlider();
-    canvas.setOnScroll(event -> {
-      double delta = event.getDeltaY();
+      graphics = canvas.getGraphicsContext2D();
+      offsetX = canvas.getWidth() / 2;
+      offsetY = canvas.getHeight() / 2;
+      camera = new Observador(canvas.getHeight(), Math.toRadians(40));
+      estabelecerSlider();
+      estabelecerAcaoMouse();
 
-      if (delta > 0) {
-        camera.afastar();
-      } else if (delta < 0) {
-        camera.aproximar();
-      }
-    });
+      eixoAnterior = 0;
+      orientacao = new Quaternio(1, 0, 0, 0);
 
-    anguloRotacaoX = 0;
-    anguloRotacaoY = 0;
-    anguloRotacaoZ = 0;
+      estabelecerTextFields();
+      estabelerChoiceBox();
+      estabelecerSpinners();
 
-    eixoAnterior = 0;
-
-    anguloRotacaoObjetoX = 0;
-    anguloRotacaoObjetoY = 0;
-    anguloRotacaoObjetoZ = 0;
-
-    orientacao = new Quaternio(1, 0, 0, 0);
-
-    estabelecerTextFields();
-
-    estabelerChoiceBox();
-
-    estabelecerSpinners();
-
-    checkRotacionar.selectedProperty().addListener((observable, antigo, marcado) -> {
-
-      cbEixo.setDisable(marcado);
-      cbEixo.setOpacity(marcado ? 0.5 : 1.0);
-
-    });
-
-    canvas.setOnMousePressed(event -> {
-      mouseX = event.getX();
-      mouseY = event.getY();
-    });
-
-    canvas.setOnMouseDragged(event -> {
-
-      double deltaX = event.getX() - mouseX;
-      double deltaY = event.getY() - mouseY;
-
-      double sensibilidade = 0.01;
-
-      anguloRotacaoY += deltaX * sensibilidade;
-
-      anguloRotacaoX += deltaY * sensibilidade;
-
-      mouseX = event.getX();
-      mouseY = event.getY();
-
-      // rotacionarGeral();
-    });
-
+      checkRotacionar.selectedProperty().addListener((observable, antigo, marcado) -> {
+        cbEixo.setDisable(marcado);
+        cbEixo.setOpacity(marcado ? 0.5 : 1.0);
+      });
   }
-
+  
   @FXML
   public void desenharEixos(ActionEvent e) {
     adicionarEixo();
@@ -237,9 +195,6 @@ public class ControladorTelaPrincipal implements Initializable {
       default:
         break;
     }
-    // reta = new ConjuntoPontos(DesenharFormas.reta(new
-    // Ponto3D(spinnerX.getValue(), spinnerY.getValue() , spinnerZ.getValue()),
-    // 50));
   }
 
   @FXML
@@ -266,6 +221,11 @@ public class ControladorTelaPrincipal implements Initializable {
     }).start();
   }
 
+  private void estabelecerAcaoMouse() {
+      AcaoMouse eventoMouse = new AcaoMouse(canvas, camera);
+      eventoMouse.estabelecerAcaoScrool(ponteiroAnguloRotacaoX, ponteiroAnguloRotacaoY); 
+  }
+ 
   private void benchmarkGeral() {
     System.out.println("Iniciando teste de perfomance");
     System.out.println("Quaternios x Angulos de Euler x Matriz de mudanca de base");
@@ -350,7 +310,7 @@ public class ControladorTelaPrincipal implements Initializable {
 
     if (lista != null) {
       for (Ponto3D ponto3D : p) {
-        Ponto2D ponto2D = camera.projecaoPerspectiva(ponto3D, anguloRotacaoY, anguloRotacaoX);
+        Ponto2D ponto2D = camera.projecaoPerspectiva(ponto3D, ponteiroAnguloRotacaoY.obter(), ponteiroAnguloRotacaoX.obter());
         drawPoint(ponto2D, 2, cor);
       }
     }
