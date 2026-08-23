@@ -425,48 +425,6 @@ public class ControladorTelaPrincipal implements Initializable {
       rotacionarObjeto(novo, EIXO_Z);
     });
   }
-
- 
-  private void adicionarEixo() {
-      eixoX = new ConjuntoPontos(DesenharFormas.drawLine(new Ponto3D(0, -85, 0), new Ponto3D(0, 85, 0)));
-      eixoY = new ConjuntoPontos(DesenharFormas.drawLine(new Ponto3D(-85, 0, 0), new Ponto3D(85, 0, 0)));
-      eixoZ = new ConjuntoPontos(DesenharFormas.drawLine(new Ponto3D(0, 0, -85), new Ponto3D(0, 0, 85)));        
-  }
-  
-  private void adicionarPlano() {
-      plano =  new ConjuntoPontos(DesenharFormas.desenharPlanoRaso(170, 170, new Ponto3D(-85, 0, -85), 5000));
-  }
-
-  private void estabelecerSlider() {
-    cbEixo.setItems(FXCollections.observableArrayList("X", "Y", "Z"));
-    cbEixo.setValue("X");
-    cbEixo.getSelectionModel().selectedIndexProperty().addListener((obs, indiceAntigo, indiceNovo) -> {
-      sliderRotacao.setValue(selecionarEixo((int) indiceNovo));
-    });
-
-    sliderRotacao.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
-    
-      rotacionarObjeto(sliderRotacao.getValue(), cbEixo.getSelectionModel().getSelectedIndex());
-    });
-
-    sliderHorizontal.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
-     
-      anguloRotacaoY = sliderHorizontal.getValue();
-      rotacionarGeral();
-    });
-
-    sliderVertical.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
-     
-      anguloRotacaoX = sliderVertical.getValue();
-      rotacionarGeral();
-    });
-
-    sliderProfundidade.valueProperty().addListener((observable, valorAntigo, valorNovo) -> {
-      
-      anguloRotacaoZ = sliderVertical.getValue();
-      rotacionarGeral();
-    });
-  }
  
   private double selecionarEixo(int eixo) {
     switch (eixo) {
