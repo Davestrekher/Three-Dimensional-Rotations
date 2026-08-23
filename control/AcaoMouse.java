@@ -1,19 +1,20 @@
 package control;
 
 import javafx.scene.canvas.Canvas;
-import math.Observador;
+import math.Camera;
+
 public class AcaoMouse {
 
      private Canvas canvas;
-     private Observador camera;
+     private Camera camera;
      private double mouseX, mouseY;
      private AnguloRotacao anguloX, anguloY; 
-     public AcaoMouse(Canvas canvas, Observador camera) {
+     public AcaoMouse(Canvas canvas, Camera camera) {
             this.canvas = canvas;
             this.camera = camera;
      }
 
-     public void estabelecerAcaoScrool(AnguloRotacao anguloRotacaoY, AnguloRotacao anguloRotacaoX) {
+     public void estabelecerAcaoScroll(AnguloRotacao anguloRotacaoY, AnguloRotacao anguloRotacaoX) {
            canvas.setOnScroll(event -> {
              double delta = event.getDeltaY();
              if (delta > 0) {
@@ -32,9 +33,14 @@ public class AcaoMouse {
                  double deltaX = event.getX() - mouseX;
                  double deltaY = event.getY() - mouseY;
                  double sensibilidade = 0.01;
-                 anguloY.alterar(deltaY * sensibilidade);
-                 anguloX.alterar(deltaX * sensibilidade);
+                 anguloY.alterar(anguloY.obterInicial() + deltaY * sensibilidade);
+                 anguloX.alterar(anguloX.obterInicial() + deltaX * sensibilidade);
                   
+          });
+
+          canvas.setOnMouseReleased(event ->{
+            anguloX.alterarInicial(anguloX.obter());
+            anguloY.alterarInicial(anguloY.obter());
           });
      }
 }

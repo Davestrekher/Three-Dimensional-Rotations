@@ -15,7 +15,7 @@ public class Rotacao {
     coordenados.
     Note que a matriz do meio da multiplicacao eh a Y, o que permite o bloqueio
     de Gimbal quando o anguloY atinge valores como pi/2 ou-pi/2
-   */
+  */
 
   public static ArrayList<Ponto3D> angulosDeEuler(ArrayList<Ponto3D> pontos, double anguloX, double anguloY,
       double anguloZ) {
@@ -76,11 +76,50 @@ public class Rotacao {
 
     return new Ponto3D(x, y, z);
   }
+  /* 
+    Em construcao...
+  */
+  public static ArrayList<Ponto3D> angulosDeEulerReta(ArrayList<Ponto3D> pontos, Ponto3D vetorDiretor, double anguloRotacao){
+    double denominadorHorizontal = Math.sqrt(vetorDiretor.getZ()*vetorDiretor.getZ() + vetorDiretor.getX()*vetorDiretor.getX());
+    double coordenadaHorizontal = vetorDiretor.getZ() > 0 ? Math.asin(vetorDiretor.getX() / denominadorHorizontal): Math.PI - Math.asin(vetorDiretor.getX() / denominadorHorizontal);
+    
+    double denominadorVertical = Math.sqrt(vetorDiretor.getZ()*vetorDiretor.getZ() + vetorDiretor.getX()*vetorDiretor.getX() + vetorDiretor.getY()*vetorDiretor.getY());
+    double coordenadaVertical = vetorDiretor.getZ() > 0 ? Math.asin(vetorDiretor.getY() / denominadorVertical): Math.PI - Math.asin(vetorDiretor.getY() / denominadorVertical);
+
+    double[][] matrixX = { { 1, 0, 0 },
+        { 0, Math.cos(coordenadaVertical), -Math.sin(coordenadaVertical) },
+        { 0, Math.sin(coordenadaVertical), Math.cos(coordenadaVertical) } };
+
+    double[][] matrixY = { { Math.cos(coordenadaHorizontal), 0, Math.sin(coordenadaHorizontal) },
+        { 0, 1, 0 },
+        { -Math.sin(coordenadaHorizontal), 0, Math.cos(coordenadaHorizontal) } };
+
+    double[][] matrixZ = { { Math.cos(anguloRotacao), -Math.sin(anguloRotacao), 0 },
+        { Math.sin(anguloRotacao), Math.cos(anguloRotacao), 0 },
+        { 0, 0, 1 } };
+
+    double[][] matrixGeral = OperacoesMatrizes
+        .multiplicarMatrizes(OperacoesMatrizes.multiplicarMatrizes(matrixX, matrixY), matrixZ);
+    
+    ArrayList<Ponto3D> novosPontos = new ArrayList<>();
+    for (Ponto3D ponto : pontos) {
+      double[][] matrixXYZ = { { ponto.getX() }, { ponto.getY() }, { ponto.getZ() } };
+      double[][] matrixFinal = OperacoesMatrizes.multiplicarMatrizes(matrixGeral, matrixXYZ);
+
+      double x = matrixFinal[0][0];
+      double y = matrixFinal[1][0];
+      double z = matrixFinal[2][0];
+
+      novosPontos.add(new Ponto3D(x, y, z));
+    }
+
+    return novosPontos;
+  }
 
   /*
-    Rotaciona um alista de pontos em torno de uma reta (determinada por um vetor diretor), utilizando
+    Rotaciona uma lista de pontos em torno de uma reta (determinada por um vetor diretor), utilizando
     tres vetores perpendiculares para implementar um algoritmo de matriz de mudanca de base. 
-   */
+  */
   public static ArrayList<Ponto3D> rotacionarTornoReta(ArrayList<Ponto3D> pontos, Ponto3D vetorDiretor, double angulo) {
     // double modulo = calcularModulo(vetorDiretor);
     Ponto3D vetorDiretorNormalizado = OperacoesVetores.normalizarVetor(vetorDiretor);

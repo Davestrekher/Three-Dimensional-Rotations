@@ -29,7 +29,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.Node;
-import javafx.scene.Camera;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -40,12 +39,13 @@ import javafx.scene.shape.Mesh;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.text.Text;
 import math.DesenharFormas;
-import math.Observador;
+import math.Camera;
 import math.OperacaoQuaternios;
 import math.Ponto2D;
 import math.Ponto3D;
 import math.Quaternio;
 import math.Rotacao;
+import model.Benchmark;
 import javafx.scene.text.Font;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
@@ -101,7 +101,7 @@ public class ControladorTelaPrincipal implements Initializable {
   private double offsetX;
   private double offsetY;
   private ArrayList<ConjuntoPontos> conjuntoPontos;
-  private Observador camera;
+  private Camera camera;
   private Double anguloRotacaoX = 0.0;
   private Double anguloRotacaoY = 0.0;
   private Double anguloRotacaoZ = 0.0;
@@ -141,7 +141,7 @@ public class ControladorTelaPrincipal implements Initializable {
       graphics = canvas.getGraphicsContext2D();
       offsetX = canvas.getWidth() / 2;
       offsetY = canvas.getHeight() / 2;
-      camera = new Observador(canvas.getHeight(), Math.toRadians(40));
+      camera = new Camera(canvas.getHeight(), Math.toRadians(40));
       estabelecerSlider();
       estabelecerAcaoMouse();
 
@@ -217,73 +217,15 @@ public class ControladorTelaPrincipal implements Initializable {
   @FXML
   public void benchmark() {
     new Thread(() -> {
-      benchmarkGeral();
+      Benchmark.benchmarkGeral(plano, 10000);
     }).start();
   }
 
   private void estabelecerAcaoMouse() {
-      AcaoMouse eventoMouse = new AcaoMouse(canvas, camera);
-      eventoMouse.estabelecerAcaoScrool(ponteiroAnguloRotacaoX, ponteiroAnguloRotacaoY); 
+    AcaoMouse eventoMouse = new AcaoMouse(canvas, camera);
+    eventoMouse.estabelecerAcaoScroll(ponteiroAnguloRotacaoX, ponteiroAnguloRotacaoY); 
   }
- 
-  private void benchmarkGeral() {
-    System.out.println("Iniciando teste de perfomance");
-    System.out.println("Quaternios x Angulos de Euler x Matriz de mudanca de base");
-    System.out.println("Número de repeticoes: 10000");
-    ConjuntoPontos planoTeste = new ConjuntoPontos(plano.getPontoInicial());
 
-    int repeticoes = 10000;
-    long inicio = System.currentTimeMillis();
-
-    for (int i = 0; i < repeticoes; i++) {
-      Rotacao.angulosDeEuler(
-          planoTeste.getPontoInicial(),
-          anguloRotacaoObjetoX,
-          anguloRotacaoObjetoY,
-          anguloRotacaoObjetoZ);
-    }
-
-    long fim = System.currentTimeMillis();
-
-    double tempoMedioEuler = (fim - inicio) / (double) repeticoes;
-
-    ConjuntoPontos planoTeste2 = new ConjuntoPontos(plano.getPontoInicial());
-    inicio = System.currentTimeMillis();
-
-    for (int i = 0; i < repeticoes; i++) {
-      planoTeste2.setPonto(Rotacao.rotacionarUsandoQuaternios(planoTeste2.getPontoInicial(), new Ponto3D(1, 0, 0),
-          sliderRotacao.getValue()));
-      planoTeste2.setPonto(
-          Rotacao.rotacionarUsandoQuaternios(planoTeste2.getPonto(), new Ponto3D(0, 1, 0), sliderRotacao.getValue()));
-      planoTeste2.setPonto(Rotacao.rotacionarUsandoQuaternios(planoTeste2.getPontoInicial(), new Ponto3D(0, 0, 1),
-          sliderRotacao.getValue()));
-    }
-
-    fim = System.currentTimeMillis();
-
-    double tempoMedioQuaternios = (fim - inicio) / (double) repeticoes;
-
-    ConjuntoPontos planoTeste3 = new ConjuntoPontos(plano.getPontoInicial());
-    inicio = System.currentTimeMillis();
-
-    for (int i = 0; i < repeticoes; i++) {
-      planoTeste3.setPonto(Rotacao.rotacionarTornoReta(planoTeste3.getPontoInicial(), new Ponto3D(1, 0, 0),
-          sliderRotacao.getValue()));
-      planoTeste3.setPonto(
-          Rotacao.rotacionarTornoReta(planoTeste3.getPonto(), new Ponto3D(0, 1, 0), sliderRotacao.getValue()));
-      planoTeste3.setPonto(Rotacao.rotacionarTornoReta(planoTeste3.getPontoInicial(), new Ponto3D(0, 0, 1),
-          sliderRotacao.getValue()));
-    }
-
-    fim = System.currentTimeMillis();
-
-    double tempoMedioMudancaDeBase = (fim - inicio) / (double) repeticoes;
-
-    System.out.println("Tempo de execução em média:");
-    System.out.println("Angulos de euler:" + tempoMedioEuler + " ms");
-    System.out.println("Quaternios:" + tempoMedioQuaternios + " ms");
-    System.out.println("Matriz de mudanca de base:" + tempoMedioMudancaDeBase + " ms");
-  }
 
   private void drawPoint(Ponto2D ponto, double tamanho, Color cor) {
     graphics.setFill(cor);
@@ -357,7 +299,7 @@ public class ControladorTelaPrincipal implements Initializable {
       double z = vetor.getZ();
       if (x != 0 || y != 0 || z != 0) {
         sphere.setPonto(
-            Rotacao.rotacionarTornoReta(sphere.getPontoInicial(), new Ponto3D(x, y, z),
+            Rotacao.angulosDeEulerReta(sphere.getPontoInicial(), new Ponto3D(x, y, z),
                 sliderRotacao.getValue()));
       }
     }
@@ -373,46 +315,6 @@ public class ControladorTelaPrincipal implements Initializable {
           Rotacao.rotacionarUsandoQuaternios(sphere.getPontoInicial(), vetor,
               sliderRotacao.getValue()));
 
-      /*
-       * switch (eixo) {
-       * case EIXO_X:
-       * if (eixoAnterior != eixo) {
-       * sphereAtual = new ArrayList<>(sphere.getPonto());
-       * resetEixo(eixoAnterior);
-       * eixoAnterior = eixo;
-       * }
-       * sphere.setPonto(
-       * Rotacao.rotacionarUsandoQuaternios(sphereAtual, new Ponto3D(1, 0, 0),
-       * anguloRotacaoObjetoX));
-       * break;
-       * case EIXO_Y:
-       * if (eixoAnterior != eixo) {
-       * sphereAtual = new ArrayList<>(sphere.getPonto());
-       * resetEixo(eixoAnterior);
-       * eixoAnterior = eixo;
-       * }
-       * sphere.setPonto(
-       * Rotacao.rotacionarUsandoQuaternios(sphereAtual, new Ponto3D(0, 1, 0),
-       * anguloRotacaoObjetoY));
-       * break;
-       * case EIXO_Z:
-       * if (eixoAnterior != eixo) {
-       * sphereAtual = new ArrayList<>(sphere.getPonto());
-       * resetEixo(eixoAnterior);
-       * eixoAnterior = eixo;
-       * }
-       * sphere.setPonto(
-       * Rotacao.rotacionarUsandoQuaternios(sphereAtual, new Ponto3D(0, 0, 1),
-       * anguloRotacaoObjetoZ));
-       * break;
-       * default:
-       * sphere.setPonto(
-       * Rotacao.rotacionarUsandoQuaternios(sphere.getPontoInicial(), new Ponto3D(1,
-       * 0, 0), anguloRotacaoObjetoX));
-       * break;
-       * }
-       */
-
     } else if (reta != null)
 
     {
@@ -426,16 +328,6 @@ public class ControladorTelaPrincipal implements Initializable {
             Rotacao.rotacionarTornoReta(sphere.getPontoInicial(), new Ponto3D(x, y, z),
                 sliderRotacao.getValue()));
       }
-    }
-  }
-
-  private void resetEixo(int eixo) {
-    if (eixo == 0) {
-      anguloRotacaoObjetoX = 0;
-    } else if (eixo == 1) {
-      anguloRotacaoObjetoY = 0;
-    } else {
-      anguloRotacaoObjetoZ = 0;
     }
   }
 

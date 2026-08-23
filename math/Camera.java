@@ -4,7 +4,7 @@
 
 package math;
 
-public class Observador {
+public class Camera {
 
   //Posicao da camera no espaco
   private double x;
@@ -20,7 +20,7 @@ public class Observador {
   //Campo de visao da camera
   private double fov;
 
-  public Observador(double altura, double fov) {
+  public Camera(double altura, double fov) {
     x = 0;
     y = 0;
     z = 150;
