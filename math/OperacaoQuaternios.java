@@ -1,3 +1,8 @@
+/*
+  Classe que une as operacoes de quaternios utilizadas na classe de rotacao
+*/
+
+
 package math;
 
 public class OperacaoQuaternios {
@@ -9,6 +14,7 @@ public class OperacaoQuaternios {
     return new Quaternio(qA.getA() - qB.getA(), qA.getI() - qB.getI(), qA.getJ() - qB.getJ(), qA.getK() - qB.getK());
   }
 
+  //Note que a multiplicacao entre quaternios nao eh comutativa
   public static Quaternio prod(Quaternio qA, Quaternio qB) {
     double a = qA.getA() * qB.getA() - qA.getI() * qB.getI() - qA.getJ() * qB.getJ() - qA.getK() * qB.getK();
     double i = qA.getA() * qB.getI() + qA.getI() * qB.getA() + qA.getJ() * qB.getK() - qA.getK() * qB.getJ();
@@ -34,5 +40,20 @@ public class OperacaoQuaternios {
 
   private static double calculaModulo(Quaternio q) {
     return Math.sqrt(q.getA() * q.getA() + q.getI() * q.getI() + q.getJ() * q.getJ() + q.getK() * q.getK());
+  }
+
+  public static Quaternio normalizarQuaternion(Quaternio q) {
+
+    double norma = Math.sqrt(
+        q.getA() * q.getA() +
+            q.getI() * q.getI() +
+            q.getJ() * q.getJ() +
+            q.getK() * q.getK());
+
+    return new Quaternio(
+        q.getA() / norma,
+        q.getI() / norma,
+        q.getJ() / norma,
+        q.getK() / norma);
   }
 }

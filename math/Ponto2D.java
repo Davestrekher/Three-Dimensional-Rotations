@@ -1,3 +1,8 @@
+/*
+  Abstracao de um ponto bidimensional. As operacoes matematicas nao ocorrem nesses pontos, mas os pontos
+  de tres dimensioes sao projetados na tela atraves destes pontos de duas dimensoes. As projecoes ocorrem na classe Observador.java
+*/
+
 package math;
 
 public class Ponto2D {

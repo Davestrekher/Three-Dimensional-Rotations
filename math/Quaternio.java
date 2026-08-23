@@ -1,7 +1,14 @@
+/*
+  Abstracao de um numero quaternio
+*/
+
+
 package math;
 
 public class Quaternio {
-  private double a;
+  //Parte real
+  private double a; 
+  //Partes imaginarias
   private double i;
   private double j;
   private double k;
