@@ -11,4 +11,4 @@ javac Main.java
 
 ## Executar
 Na raiz do projeto, execute:
-java Principal
+java Main
